@@ -127,6 +127,18 @@ void SkeletonMethod::OnProxyMethodUnsubscribe(const ProxyMethodInstanceIdentifie
     SCORE_LANGUAGE_FUTURECPP_PRECONDITION_PRD(num_elements_erased != 0U);
 }
 
+void SkeletonMethod::OnProxyMethodUnsubscribeFinished(
+    const ProxyMethodInstanceIdentifier proxy_method_instance_identifier)
+{
+    const std::lock_guard lock{registration_guards_mutex_};
+
+    // TODO: We should consider changing the data structure of registration_guards_ to avoid having to do a
+    //  lookup before erasing, since we expect at most one entry per application id. This would also allow us
+    //  to add a check that verifies that the PID of the process that is unsubscribing matches the PID of the
+    //  process that subscribed, which would be a good safety check to have.
+    registration_guards_.erase(proxy_method_instance_identifier.proxy_instance_identifier.application_id);
+}
+
 void SkeletonMethod::UnregisterMethodCallHandlers()
 {
     const std::lock_guard lock{registration_guards_mutex_};

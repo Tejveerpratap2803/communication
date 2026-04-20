@@ -639,7 +639,10 @@ cc_library(
     visibility = [
         "//score/mw/com:__subpackages__",
     ],
-    deps = ["@score_baselibs//score/result"],
+    deps = [
+        "@score_baselibs//score/language/futurecpp",
+        "@score_baselibs//score/result",
+    ],
 )
 
 cc_library(
@@ -684,7 +687,6 @@ cc_library(
     features = COMPILER_WARNING_FEATURES,
     tags = ["FFI"],
     visibility = ["//score/mw/com:__subpackages__"],
-    deps = ["@score_baselibs//score/language/futurecpp"],
 )
 
 cc_library(
@@ -943,6 +945,7 @@ cc_library(
     implementation_deps = [
         ":error",
         "//score/mw/com/impl/bindings/lola/methods:method_error",
+        "@score_baselibs//score/language/futurecpp",
     ],
     tags = ["FFI"],
     visibility = [
@@ -1200,6 +1203,7 @@ cc_gtest_unit_test(
     ],
     deps = [
         ":error",
+        "@score_baselibs//score/language/futurecpp",
         "@score_baselibs//score/language/futurecpp:futurecpp_test_support",
     ],
 )
@@ -1217,6 +1221,7 @@ cc_gtest_unit_test(
         ":error",
         ":error_serializer",
         "//score/mw/com/impl/bindings/lola/methods:method_error",
+        "@score_baselibs//score/language/futurecpp",
         "@score_baselibs//score/language/futurecpp:futurecpp_test_support",
     ],
 )
