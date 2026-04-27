@@ -78,7 +78,7 @@ struct MethodCallUnserializedPayload
     std::size_t queue_position;
 };
 
-using MethodUnserializedReply = score::ResultBlank;
+using MethodUnserializedReply = score::Result<void>;
 using MethodReplyPayload = ErrorSerializer<MethodErrc>::SerializedErrorType;
 
 constexpr std::uint32_t kMaxSendSize{32U};
@@ -108,7 +108,7 @@ bool DeserializeFromPayload(const score::cpp::span<const std::uint8_t> payload, 
 
 /// \brief Function which deserializes a reply payload which is received when calling SendWaitReply in CallMethod or
 /// SubscribeServiceMethod.
-/// \return The outer result returns an error if SendWaitReply itself returned an error. The inner ResultBlank contains
+/// \return The outer result returns an error if SendWaitReply itself returned an error. The inner Result<void> contains
 /// the result encoded in the message itself.
 score::Result<MethodUnserializedReply> DeserializeFromMethodReplyPayload(
     const score::cpp::span<const std::uint8_t> payload) noexcept
@@ -149,7 +149,7 @@ auto SerializeToMessage(const std::uint8_t message_id, const T& t) noexcept -> s
     return out;
 }
 
-auto SerializeToMethodReplyMessage(score::ResultBlank reply_result) noexcept
+auto SerializeToMethodReplyMessage(score::Result<void> reply_result) noexcept
     -> std::array<std::uint8_t, sizeof(MethodReplyPayload)>
 {
     static_assert(std::is_trivially_copyable_v<MethodReplyPayload>);
@@ -295,14 +295,15 @@ MessagePassingServiceInstance::MessagePassingServiceInstance(
 
 message_passing::MessageCallback MessagePassingServiceInstance::CreateSendMessageWithReplyCallback()
 {
-    auto message_callback_with_reply_scoped_function = std::make_shared<
-        score::safecpp::MoveOnlyScopedFunction<score::ResultBlank(uid_t, pid_t, score::cpp::span<const std::uint8_t>)>>(
-        message_callback_scope_,
-        [this](uid_t sender_uid,
-               pid_t sender_pid,
-               score::cpp::span<const std::uint8_t> message) noexcept -> score::ResultBlank {
-            return this->MessageCallbackWithReply(sender_uid, sender_pid, message);
-        });
+    auto message_callback_with_reply_scoped_function =
+        std::make_shared<score::safecpp::MoveOnlyScopedFunction<score::Result<void>(
+            uid_t, pid_t, score::cpp::span<const std::uint8_t>)>>(
+            message_callback_scope_,
+            [this](uid_t sender_uid,
+                   pid_t sender_pid,
+                   score::cpp::span<const std::uint8_t> message) noexcept -> score::Result<void> {
+                return this->MessageCallbackWithReply(sender_uid, sender_pid, message);
+            });
 
     // Note. When received_send_message_with_reply_callback returns an error, the message passing connection with the
     // client will be disconnected. Therefore, we only return an error from the callback when the error is unrecoverable
@@ -399,7 +400,7 @@ void MessagePassingServiceInstance::MessageCallback(const pid_t sender_pid,
     }
 }
 
-score::ResultBlank MessagePassingServiceInstance::MessageCallbackWithReply(
+score::Result<void> MessagePassingServiceInstance::MessageCallbackWithReply(
     const uid_t sender_uid,
     const pid_t sender_pid,
     const score::cpp::span<const std::uint8_t> message)
@@ -597,7 +598,7 @@ void MessagePassingServiceInstance::HandleOutdatedNodeIdMsg(const score::cpp::sp
     client_cache_.RemoveMessagePassingClient(pid_to_unregister);
 }
 
-score::ResultBlank MessagePassingServiceInstance::HandleSubscribeServiceMethodMsg(
+score::Result<void> MessagePassingServiceInstance::HandleSubscribeServiceMethodMsg(
     const score::cpp::span<const std::uint8_t> payload,
     const uid_t sender_uid,
     const pid_t sender_node_id)
@@ -628,7 +629,7 @@ score::ResultBlank MessagePassingServiceInstance::HandleUnsubscribeServiceMethod
                                                unserialized_payload.proxy_instance_identifier);
 }
 
-score::ResultBlank MessagePassingServiceInstance::HandleCallMethodMsg(
+score::Result<void> MessagePassingServiceInstance::HandleCallMethodMsg(
     const score::cpp::span<const std::uint8_t> payload,
     const uid_t sender_uid)
 {
@@ -643,7 +644,7 @@ score::ResultBlank MessagePassingServiceInstance::HandleCallMethodMsg(
         unserialized_payload.proxy_method_instance_identifier, unserialized_payload.queue_position, sender_uid);
 }
 
-score::ResultBlank MessagePassingServiceInstance::CallSubscribeServiceMethodLocally(
+score::Result<void> MessagePassingServiceInstance::CallSubscribeServiceMethodLocally(
     const SkeletonInstanceIdentifier& skeleton_instance_identifier,
     const ProxyInstanceIdentifier& proxy_instance_identifier,
     const uid_t proxy_uid,
@@ -714,7 +715,7 @@ score::ResultBlank MessagePassingServiceInstance::CallUnsubscribeServiceMethodLo
     return invocation_result.value();
 }
 
-score::ResultBlank MessagePassingServiceInstance::CallServiceMethodLocally(
+score::Result<void> MessagePassingServiceInstance::CallServiceMethodLocally(
     const ProxyMethodInstanceIdentifier& proxy_method_instance_identifier,
     const std::size_t queue_position,
     const uid_t proxy_uid)
@@ -754,7 +755,7 @@ score::ResultBlank MessagePassingServiceInstance::CallServiceMethodLocally(
     return {};
 }
 
-ResultBlank MessagePassingServiceInstance::CallSubscribeServiceMethodRemotely(
+Result<void> MessagePassingServiceInstance::CallSubscribeServiceMethodRemotely(
     const SkeletonInstanceIdentifier& skeleton_instance_identifier,
     const ProxyInstanceIdentifier& proxy_instance_identifier,
     const pid_t target_node_id)
@@ -782,7 +783,7 @@ ResultBlank MessagePassingServiceInstance::CallSubscribeServiceMethodRemotely(
         score::mw::log::LogError("lola")
             << "MessagePassingService: Parsing SubscribeServiceMethodMessage reply from node_id " << target_node_id
             << "failed during deserialization";
-        return MakeUnexpected<Blank>(deserialization_result.error());
+        return MakeUnexpected<void>(deserialization_result.error());
     }
     return deserialization_result.value();
 }
@@ -820,7 +821,7 @@ ResultBlank MessagePassingServiceInstance::CallUnsubscribeServiceMethodRemotely(
     return deserialization_result.value();
 }
 
-ResultBlank MessagePassingServiceInstance::CallServiceMethodRemotely(
+Result<void> MessagePassingServiceInstance::CallServiceMethodRemotely(
     const ProxyMethodInstanceIdentifier& proxy_method_instance_identifier,
     const std::size_t queue_position,
     const pid_t target_node_id)
@@ -855,7 +856,7 @@ ResultBlank MessagePassingServiceInstance::CallServiceMethodRemotely(
     {
         score::mw::log::LogError("lola") << "MessagePassingService: CallServiceMethodMessage reply from node_id "
                                          << target_node_id << "returned failure";
-        return MakeUnexpected<Blank>(method_call_result.error());
+        return MakeUnexpected<void>(method_call_result.error());
     }
     return {};
 }
@@ -1207,7 +1208,7 @@ void MessagePassingServiceInstance::UnregisterEventNotification(
     }
 }
 
-ResultBlank MessagePassingServiceInstance::RegisterOnServiceMethodSubscribedHandler(
+Result<void> MessagePassingServiceInstance::RegisterOnServiceMethodSubscribedHandler(
     const SkeletonInstanceIdentifier skeleton_instance_identifier,
     IMessagePassingService::ServiceMethodSubscribedHandler subscribed_callback,
     IMessagePassingService::AllowedConsumerUids allowed_proxy_uids)
@@ -1246,7 +1247,7 @@ ResultBlank MessagePassingServiceInstance::RegisterOnServiceMethodUnsubscribedHa
     return {};
 }
 
-ResultBlank MessagePassingServiceInstance::RegisterMethodCallHandler(
+Result<void> MessagePassingServiceInstance::RegisterMethodCallHandler(
     const ProxyMethodInstanceIdentifier proxy_method_instance_identifier,
     IMessagePassingService::MethodCallHandler method_call_callback,
     const uid_t allowed_proxy_uid)
@@ -1503,7 +1504,7 @@ QualityType MessagePassingServiceInstance::GetPartnerQualityType() const
     }
 }
 
-ResultBlank MessagePassingServiceInstance::SubscribeServiceMethod(
+Result<void> MessagePassingServiceInstance::SubscribeServiceMethod(
     const SkeletonInstanceIdentifier& skeleton_instance_identifier,
     const ProxyInstanceIdentifier& proxy_instance_identifier,
     const pid_t target_node_id)
@@ -1559,7 +1560,7 @@ ResultBlank MessagePassingServiceInstance::UnsubscribeServiceMethod(
     }
 }
 
-ResultBlank MessagePassingServiceInstance::CallMethod(
+Result<void> MessagePassingServiceInstance::CallMethod(
     const ProxyMethodInstanceIdentifier& proxy_method_instance_identifier,
     std::size_t queue_position,
     const pid_t target_node_id)

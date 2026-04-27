@@ -148,10 +148,10 @@ class MessagePassingService final : public IMessagePassingService
     /// method shared memory region and wants to subscribe. The callback registered with RegisterMethodCall will be
     /// called on the Skeleton side and a response will be returned.
     /// \details see IMessagePassingService::SubscribeServiceMethod
-    ResultBlank SubscribeServiceMethod(const QualityType asil_level,
-                                       const SkeletonInstanceIdentifier& skeleton_instance_identifier,
-                                       const ProxyInstanceIdentifier& proxy_instance_identifier,
-                                       const pid_t target_node_id) override;
+    Result<void> SubscribeServiceMethod(const QualityType asil_level,
+                                        const SkeletonInstanceIdentifier& skeleton_instance_identifier,
+                                        const ProxyInstanceIdentifier& proxy_instance_identifier,
+                                        const pid_t target_node_id) override;
 
     /// \brief Best-effort call made by a Proxy on destruction to notify the Skeleton that the proxy is being
     /// destroyed.
@@ -165,10 +165,10 @@ class MessagePassingService final : public IMessagePassingService
     /// callback registered with RegisterOnServiceMethodSubscribed will be called on the Skeleton side and a response
     /// will be returned.
     /// \details see IMessagePassingService::CallMethod
-    ResultBlank CallMethod(const QualityType asil_level,
-                           const ProxyMethodInstanceIdentifier& proxy_method_instance_identifier,
-                           std::size_t queue_position,
-                           const pid_t target_node_id) override;
+    Result<void> CallMethod(const QualityType asil_level,
+                            const ProxyMethodInstanceIdentifier& proxy_method_instance_identifier,
+                            std::size_t queue_position,
+                            const pid_t target_node_id) override;
 
   private:
     using Engine = score::message_passing::Engine;

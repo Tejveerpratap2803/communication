@@ -103,9 +103,10 @@ class Skeleton final : public SkeletonBinding
     Skeleton(Skeleton&& other) = delete;
     Skeleton& operator=(Skeleton&& other) = delete;
 
-    ResultBlank PrepareOffer(SkeletonEventBindings& events,
-                             SkeletonFieldBindings& fields,
-                             std::optional<RegisterShmObjectTraceCallback> register_shm_object_trace_callback) override;
+    Result<void> PrepareOffer(
+        SkeletonEventBindings& events,
+        SkeletonFieldBindings& fields,
+        std::optional<RegisterShmObjectTraceCallback> register_shm_object_trace_callback) override;
 
     void PrepareStopOffer(
         std::optional<UnregisterShmObjectTraceCallback> unregister_shm_object_callback) noexcept override;
@@ -166,16 +167,16 @@ class Skeleton final : public SkeletonBinding
     bool VerifyAllMethodsRegistered() const override;
 
   private:
-    ResultBlank OnServiceMethodsSubscribed(const ProxyInstanceIdentifier& proxy_instance_identifier,
-                                           const uid_t proxy_uid,
-                                           const QualityType asil_level,
-                                           const pid_t proxy_pid);
+    Result<void> OnServiceMethodsSubscribed(const ProxyInstanceIdentifier& proxy_instance_identifier,
+                                            const uid_t proxy_uid,
+                                            const QualityType asil_level,
+                                            const pid_t proxy_pid);
 
     ResultBlank OnServiceMethodsUnsubscribed(const ProxyInstanceIdentifier& proxy_instance_identifier);
 
     using MethodIdsToUnsubscribe = std::vector<UniqueMethodIdentifier>;
 
-    std::pair<score::ResultBlank, MethodIdsToUnsubscribe> SubscribeMethods(
+    std::pair<score::Result<void>, MethodIdsToUnsubscribe> SubscribeMethods(
         const MethodData& method_data,
         const ProxyInstanceIdentifier proxy_instance_identifier,
         const uid_t proxy_uid,

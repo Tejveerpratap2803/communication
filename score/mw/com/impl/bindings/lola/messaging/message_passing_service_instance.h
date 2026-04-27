@@ -80,7 +80,7 @@ class MessagePassingServiceInstance : public IMessagePassingServiceInstance
                                      const IMessagePassingService::HandlerRegistrationNoType registration_no,
                                      const pid_t target_node_id) noexcept override;
 
-    ResultBlank RegisterOnServiceMethodSubscribedHandler(
+    Result<void> RegisterOnServiceMethodSubscribedHandler(
         const SkeletonInstanceIdentifier skeleton_instance_identifier,
         IMessagePassingService::ServiceMethodSubscribedHandler subscribed_callback,
         IMessagePassingService::AllowedConsumerUids allowed_proxy_uids) override;
@@ -89,9 +89,9 @@ class MessagePassingServiceInstance : public IMessagePassingServiceInstance
         const SkeletonInstanceIdentifier skeleton_instance_identifier,
         IMessagePassingService::ServiceMethodUnsubscribedHandler unsubscribed_callback) override;
 
-    ResultBlank RegisterMethodCallHandler(const ProxyMethodInstanceIdentifier proxy_method_instance_identifier,
-                                          IMessagePassingService::MethodCallHandler method_call_callback,
-                                          const uid_t allowed_proxy_uid) override;
+    Result<void> RegisterMethodCallHandler(const ProxyMethodInstanceIdentifier proxy_method_instance_identifier,
+                                           IMessagePassingService::MethodCallHandler method_call_callback,
+                                           const uid_t allowed_proxy_uid) override;
 
     void UnregisterOnServiceMethodSubscribedHandler(
         const SkeletonInstanceIdentifier skeleton_instance_identifier) override;
@@ -122,17 +122,17 @@ class MessagePassingServiceInstance : public IMessagePassingServiceInstance
     /// \param event_id The event to stop monitoring.
     void UnregisterEventNotificationExistenceChangedCallback(const ElementFqId event_id) noexcept override;
 
-    ResultBlank SubscribeServiceMethod(const SkeletonInstanceIdentifier& skeleton_instance_identifier,
-                                       const ProxyInstanceIdentifier& proxy_instance_identifier,
-                                       const pid_t target_node_id) override;
+    Result<void> SubscribeServiceMethod(const SkeletonInstanceIdentifier& skeleton_instance_identifier,
+                                        const ProxyInstanceIdentifier& proxy_instance_identifier,
+                                        const pid_t target_node_id) override;
 
     ResultBlank UnsubscribeServiceMethod(const SkeletonInstanceIdentifier& skeleton_instance_identifier,
                                          const ProxyInstanceIdentifier& proxy_instance_identifier,
                                          const pid_t target_node_id) override;
 
-    ResultBlank CallMethod(const ProxyMethodInstanceIdentifier& proxy_method_instance_identifier,
-                           const std::size_t queue_position,
-                           const pid_t target_node_id) override;
+    Result<void> CallMethod(const ProxyMethodInstanceIdentifier& proxy_method_instance_identifier,
+                            const std::size_t queue_position,
+                            const pid_t target_node_id) override;
 
   private:
     enum class MessageType : std::uint8_t
@@ -196,9 +196,9 @@ class MessagePassingServiceInstance : public IMessagePassingServiceInstance
     message_passing::MessageCallback CreateSendMessageWithReplyCallback();
 
     void MessageCallback(const pid_t sender_pid, const score::cpp::span<const std::uint8_t> message) noexcept;
-    score::ResultBlank MessageCallbackWithReply(const uid_t sender_uid,
-                                                const pid_t sender_pid,
-                                                const score::cpp::span<const std::uint8_t> message);
+    score::Result<void> MessageCallbackWithReply(const uid_t sender_uid,
+                                                 const pid_t sender_pid,
+                                                 const score::cpp::span<const std::uint8_t> message);
     void HandleNotifyEventMsg(const score::cpp::span<const std::uint8_t> payload, const pid_t sender_node_id) noexcept;
     void HandleRegisterNotificationMsg(const score::cpp::span<const std::uint8_t> payload,
                                        const pid_t sender_node_id) noexcept;
@@ -206,12 +206,12 @@ class MessagePassingServiceInstance : public IMessagePassingServiceInstance
                                          const pid_t sender_node_id) noexcept;
     void HandleOutdatedNodeIdMsg(const score::cpp::span<const std::uint8_t> payload,
                                  const pid_t sender_node_id) noexcept;
-    score::ResultBlank HandleSubscribeServiceMethodMsg(const score::cpp::span<const std::uint8_t> payload,
-                                                       const uid_t sender_uid,
-                                                       const pid_t sender_node_id);
+    score::Result<void> HandleSubscribeServiceMethodMsg(const score::cpp::span<const std::uint8_t> payload,
+                                                        const uid_t sender_uid,
+                                                        const pid_t sender_node_id);
     score::ResultBlank HandleUnsubscribeServiceMethodMsg(const score::cpp::span<const std::uint8_t> payload,
                                                          const pid_t sender_node_id);
-    score::ResultBlank HandleCallMethodMsg(const score::cpp::span<const std::uint8_t> payload, const uid_t sender_uid);
+    score::Result<void> HandleCallMethodMsg(const score::cpp::span<const std::uint8_t> payload, const uid_t sender_uid);
 
     std::uint32_t NotifyEventLocally(const ElementFqId event_id) noexcept;
     void NotifyEventRemote(const ElementFqId event_id) noexcept;
@@ -221,26 +221,31 @@ class MessagePassingServiceInstance : public IMessagePassingServiceInstance
                                            const pid_t target_node_id) noexcept;
     void SendRegisterEventNotificationMessage(const ElementFqId event_id, const pid_t target_node_id) noexcept;
 
-    score::ResultBlank CallSubscribeServiceMethodLocally(const SkeletonInstanceIdentifier& skeleton_instance_identifier,
-                                                         const ProxyInstanceIdentifier& proxy_instance_identifier,
-                                                         const uid_t proxy_uid,
-                                                         const pid_t proxy_pid);
+    score::Result<void> CallSubscribeServiceMethodLocally(
+        const SkeletonInstanceIdentifier& skeleton_instance_identifier,
+        const ProxyInstanceIdentifier& proxy_instance_identifier,
+        const uid_t proxy_uid,
+        const pid_t proxy_pid);
+
     score::ResultBlank CallUnsubscribeServiceMethodLocally(
         const SkeletonInstanceIdentifier& skeleton_instance_identifier,
         const ProxyInstanceIdentifier& proxy_instance_identifier);
-    score::ResultBlank CallServiceMethodLocally(const ProxyMethodInstanceIdentifier& proxy_method_instance_identifier,
-                                                const std::size_t queue_position,
-                                                const uid_t proxy_uid);
 
-    ResultBlank CallSubscribeServiceMethodRemotely(const SkeletonInstanceIdentifier& skeleton_instance_identifier,
-                                                   const ProxyInstanceIdentifier& proxy_instance_identifier,
-                                                   const pid_t target_node_id);
+    score::Result<void> CallServiceMethodLocally(const ProxyMethodInstanceIdentifier& proxy_method_instance_identifier,
+                                                 const std::size_t queue_position,
+                                                 const uid_t proxy_uid);
+
+    Result<void> CallSubscribeServiceMethodRemotely(const SkeletonInstanceIdentifier& skeleton_instance_identifier,
+                                                    const ProxyInstanceIdentifier& proxy_instance_identifier,
+                                                    const pid_t target_node_id);
+
     ResultBlank CallUnsubscribeServiceMethodRemotely(const SkeletonInstanceIdentifier& skeleton_instance_identifier,
                                                      const ProxyInstanceIdentifier& proxy_instance_identifier,
                                                      const pid_t target_node_id);
-    ResultBlank CallServiceMethodRemotely(const ProxyMethodInstanceIdentifier& proxy_method_instance_identifier,
-                                          const std::size_t queue_position,
-                                          const pid_t target_node_id);
+
+    Result<void> CallServiceMethodRemotely(const ProxyMethodInstanceIdentifier& proxy_method_instance_identifier,
+                                           const std::size_t queue_position,
+                                           const pid_t target_node_id);
 
     /// \brief Function to convert ClientQualityType to a QualityType
     ///
