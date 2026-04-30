@@ -37,11 +37,13 @@ cc_library(
         "i_message_passing_service.cpp",
         "method_call_registration_guard.cpp",
         "method_subscription_registration_guard.cpp",
+        "method_unsubscription_registration_guard.cpp",
     ],
     hdrs = [
         "i_message_passing_service.h",
         "method_call_registration_guard.h",
         "method_subscription_registration_guard.h",
+        "method_unsubscription_registration_guard.h",
     ],
     features = COMPILER_WARNING_FEATURES,
     implementation_deps = [
@@ -354,6 +356,21 @@ cc_unit_test(
 cc_unit_test(
     name = "method_subscription_registration_guard_test",
     srcs = ["method_subscription_registration_guard_test.cpp"],
+    features = COMPILER_WARNING_FEATURES,
+    visibility = [
+        "//score/mw/com/impl:__subpackages__",
+    ],
+    deps = [
+        ":i_message_passing_service",
+        ":message_passing_service_mock",
+        "@score_baselibs//score/mw/log:recorder_mock",
+        "@score_baselibs//score/scope_exit",
+    ],
+)
+
+cc_unit_test(
+    name = "method_unsubscription_registration_guard_test",
+    srcs = ["method_unsubscription_registration_guard_test.cpp"],
     features = COMPILER_WARNING_FEATURES,
     visibility = [
         "//score/mw/com/impl:__subpackages__",
