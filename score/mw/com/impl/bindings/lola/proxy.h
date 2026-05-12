@@ -267,8 +267,31 @@ class Proxy : public ProxyBinding
 
     score::filesystem::Filesystem filesystem_;
 
-    // We make find_service_guard_ the last member variable since it registers a handler which accesses member variables
-    // of this class, so they should be initialised first.
+    // RAII guard that invokes TeardownMethods() on destruction. It must be declared before find_service_guard_ so
+    // that, in reverse-destruction order, find_service_guard_ is torn down first (stopping
+    // ServiceAvailabilityChangeHandler callbacks) before TeardownMethods() runs, eliminating the race on
+    // are_proxy_methods_subscribed_.
+    class MethodsCleanupGuard
+    {
+      public:
+        explicit MethodsCleanupGuard(Proxy& proxy) noexcept : proxy_{proxy} {}
+        ~MethodsCleanupGuard() noexcept
+        {
+            proxy_.TeardownMethods();
+        }
+        MethodsCleanupGuard(const MethodsCleanupGuard&) = delete;
+        MethodsCleanupGuard& operator=(const MethodsCleanupGuard&) = delete;
+        MethodsCleanupGuard(MethodsCleanupGuard&&) = delete;
+        MethodsCleanupGuard& operator=(MethodsCleanupGuard&&) = delete;
+
+      private:
+        Proxy& proxy_;
+    };
+    MethodsCleanupGuard methods_cleanup_guard_;
+
+    // find_service_guard_ must remain the last member: it registers a handler that accesses other members, so those
+    // must be initialised first and destroyed last. In particular, it is destroyed before methods_cleanup_guard_
+    // so that no ServiceAvailabilityChangeHandler callback races with TeardownMethods().
     std::unique_ptr<FindServiceGuard> find_service_guard_;
 };
 
