@@ -318,8 +318,6 @@ auto Skeleton::PrepareOffer(SkeletonEventBindings& events,
         return MakeUnexpected<void>(qm_handlers_result.error());
     }
 
-    auto qm_handlers = std::move(qm_handlers_result).value();
-
     if (quality_type_ == QualityType::kASIL_B)
     {
         auto asil_b_handlers_result =
@@ -333,6 +331,7 @@ auto Skeleton::PrepareOffer(SkeletonEventBindings& events,
         method_unsubscription_registration_guard_asil_b_.emplace(std::move(asil_b_handlers.second));
     }
 
+    auto qm_handlers = std::move(qm_handlers_result).value();
     method_subscription_registration_guard_qm_.emplace(std::move(qm_handlers.first));
     method_unsubscription_registration_guard_qm_.emplace(std::move(qm_handlers.second));
 

@@ -41,8 +41,10 @@
 #include "score/mw/com/impl/bindings/lola/methods/unique_method_identifier.h"
 #include "score/mw/log/logging.h"
 #include "score/result/result.h"
+#include "score/scope_exit/scope_exit.h"
 
 #include <score/assert.hpp>
+#include <score/callback.hpp>
 
 #include <sched.h>
 #include <atomic>
@@ -63,6 +65,7 @@ namespace score::mw::com::impl::lola
 
 class IShmPathBuilder;
 class FindServiceGuard;
+class ProxyMethodsCleanupGuardFactory;
 
 namespace detail_proxy
 {
@@ -79,6 +82,7 @@ class Proxy : public ProxyBinding
     // private members and used for testing purposes only.
     // coverity[autosar_cpp14_a11_3_1_violation]
     friend class ProxyTestAttorney;
+    friend class ProxyMethodsCleanupGuardFactory;
 
   public:
     /// \brief Class to convert an event name to an event fq id given the information already known to a Proxy
@@ -271,23 +275,7 @@ class Proxy : public ProxyBinding
     // that, in reverse-destruction order, find_service_guard_ is torn down first (stopping
     // ServiceAvailabilityChangeHandler callbacks) before TeardownMethods() runs, eliminating the race on
     // are_proxy_methods_subscribed_.
-    class MethodsCleanupGuard
-    {
-      public:
-        explicit MethodsCleanupGuard(Proxy& proxy) noexcept : proxy_{proxy} {}
-        ~MethodsCleanupGuard() noexcept
-        {
-            proxy_.TeardownMethods();
-        }
-        MethodsCleanupGuard(const MethodsCleanupGuard&) = delete;
-        MethodsCleanupGuard& operator=(const MethodsCleanupGuard&) = delete;
-        MethodsCleanupGuard(MethodsCleanupGuard&&) = delete;
-        MethodsCleanupGuard& operator=(MethodsCleanupGuard&&) = delete;
-
-      private:
-        Proxy& proxy_;
-    };
-    MethodsCleanupGuard methods_cleanup_guard_;
+    utils::ScopeExit<score::cpp::callback<void()>> methods_cleanup_guard_;
 
     // find_service_guard_ must remain the last member: it registers a handler that accesses other members, so those
     // must be initialised first and destroyed last. In particular, it is destroyed before methods_cleanup_guard_
