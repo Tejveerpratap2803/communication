@@ -307,6 +307,24 @@ class FindServiceGuard final
     std::unique_ptr<FindServiceHandle> service_availability_change_handle_;
 };
 
+namespace method_cleanup_guard
+{
+
+using ProxyMethodsCleanupGuard = utils::ScopeExit<score::cpp::callback<void()>>;
+
+}  // namespace method_cleanup_guard
+
+class ProxyMethodsCleanupGuardFactory
+{
+  public:
+    static method_cleanup_guard::ProxyMethodsCleanupGuard Create(Proxy& proxy)
+    {
+        return method_cleanup_guard::ProxyMethodsCleanupGuard{[&proxy]() {
+            proxy.TeardownMethods();
+        }};
+    }
+};
+
 std::atomic<ProxyInstanceIdentifier::ProxyInstanceCounter> Proxy::current_proxy_instance_counter_{0U};
 
 ElementFqId Proxy::EventNameToElementFqIdConverter::Convert(const std::string_view event_name) const noexcept
@@ -431,7 +449,7 @@ Proxy::Proxy(std::shared_ptr<memory::shared::ManagedMemoryResource> control,
       are_proxy_methods_setup_{false},
       are_proxy_methods_subscribed_{false},
       filesystem_{filesystem},
-      methods_cleanup_guard_{*this},
+      methods_cleanup_guard_{ProxyMethodsCleanupGuardFactory::Create(*this)},
       find_service_guard_{std::make_unique<FindServiceGuard>(
           [this](ServiceHandleContainer<HandleType> service_handle_container, FindServiceHandle) {
               // Suppress Autosar C++14 A8-5-3 states that auto variables shall not be initialized using braced
