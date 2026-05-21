@@ -169,6 +169,8 @@ class ProxyMockedMemoryFixture : public ::testing::Test
 
     ProxyMockedMemoryFixture() noexcept;
 
+    void TearDown() override;
+
     void InitialiseProxyWithConstructor(const InstanceIdentifier& instance_identifier);
     void InitialiseProxyWithCreate(const InstanceIdentifier& instance_identifier);
 

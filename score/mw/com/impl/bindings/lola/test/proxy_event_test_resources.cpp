@@ -91,6 +91,17 @@ void ProxyMockedMemoryFixture::ExpectDataSegmentOpened()
         }));
 }
 
+void ProxyMockedMemoryFixture::TearDown()
+{
+    // lola Proxy terminates on destruction if PrepareDeinitialize + FinalizeDeinitialize were not called first,
+    // so we run them here for tests that constructed a proxy directly.
+    if (proxy_ != nullptr)
+    {
+        proxy_->PrepareDeinitialize();
+        proxy_->FinalizeDeinitialize();
+    }
+}
+
 void ProxyMockedMemoryFixture::InitialiseProxyWithConstructor(const InstanceIdentifier& instance_identifier)
 {
     EnrichedInstanceIdentifier enriched_instance_identifier{instance_identifier};

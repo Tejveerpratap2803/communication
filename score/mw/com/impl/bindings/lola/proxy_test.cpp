@@ -552,6 +552,47 @@ TEST_F(ProxyAutoReconnectDeathTest, ProxyCreateWillTerminateIfStartFindServiceRe
     EXPECT_DEATH(start_find_service_fails(), ".*");
 }
 
+TEST_F(ProxyAutoReconnectDeathTest, StopProxyAutoReconnectTerminatesWhenCalledAfterHandleReset)
+{
+    // Given a proxy whose ctor populated find_service_handle_
+    InitialiseProxyWithConstructor(identifier_);
+
+    // When PrepareDeinitialize is called twice
+    // Then StopProxyAutoReconnect's precondition fires on the second call
+    EXPECT_DEATH(
+        {
+            proxy_->PrepareDeinitialize();  // resets find_service_handle_
+            proxy_->PrepareDeinitialize();  // assertion fires here
+        },
+        ".*");
+}
+
+TEST_F(ProxyAutoReconnectDeathTest, ProxyDestructionTerminatesWhenPrepareDeinitializeNotCalled)
+{
+    // When a proxy is constructed and destroyed without PrepareDeinitialize
+    // Then ~Proxy terminates because prepare_deinitialize_called_ is still false
+    EXPECT_DEATH(
+        {
+            InitialiseProxyWithConstructor(identifier_);
+            proxy_.reset();
+        },
+        ".*");
+}
+
+TEST_F(ProxyAutoReconnectDeathTest, ProxyDestructionTerminatesWhenFinalizeDeinitializeNotCalled)
+{
+    // Given a proxy on which PrepareDeinitialize has been called
+    // When it is destroyed without FinalizeDeinitialize
+    // Then ~Proxy terminates because finalize_deinitialize_called_ is still false
+    EXPECT_DEATH(
+        {
+            InitialiseProxyWithConstructor(identifier_);
+            proxy_->PrepareDeinitialize();
+            proxy_.reset();
+        },
+        ".*");
+}
+
 TEST_F(ProxyEventBindingFixture, RegisteringEventBindingWillCallNotifyServiceInstanceChangedAvailabilityOnBinding)
 {
     mock_binding::ProxyEventBase mock_proxy_event_base_binding{};
