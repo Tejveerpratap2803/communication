@@ -104,7 +104,9 @@ TYPED_TEST(ProxyEventFieldMockFixture, SubscribeReturnsErrorWhenMockReturnsError
 
 TYPED_TEST(ProxyEventFieldMockFixture, UnsubscribeDispatchesToMockAfterInjectingMock)
 {
-    // Given a ProxyEvent constructed with an empty binding and an injected mock
+    // Given a ProxyEvent constructed with an empty binding and an injected mock which is currently subscribed
+    EXPECT_CALL(this->proxy_service_element_mock_, Subscribe(kDummyMaxSampleCount)).WillOnce(Return(Result<void>{}));
+    std::ignore = this->unit_.Subscribe(kDummyMaxSampleCount);
 
     // Expecting that Unsubscribe will be called on the mock
     EXPECT_CALL(this->proxy_service_element_mock_, Unsubscribe());
