@@ -131,6 +131,9 @@ class ProxyBase
     ProxyBase(ProxyBase&& other) noexcept;
     ProxyBase& operator=(ProxyBase&& other) noexcept;
 
+    /// \brief Deinitialize all events and fields and tears down binding-level state.
+    void Deinitialize();
+
     bool AreBindingsValid() const noexcept
     {
         const bool is_proxy_binding_valid{proxy_binding_ != nullptr};

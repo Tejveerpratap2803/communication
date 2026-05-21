@@ -62,6 +62,25 @@ class ProxyBinding
     virtual void UnregisterEventBinding(const std::string_view service_element_name) noexcept = 0;
 
     virtual Result<void> SetupMethods() = 0;
+
+    /// Called by ProxyBase::Deinitialize before unsubscribing the service elements.
+    ///
+    /// Class hierarchy:
+    ///   ProxyWrapperClass : Interface<Trait>
+    ///     --> Interface<Trait> = MyInterface<ProxyTrait> (declares some_event/some_field/some_method as members)
+    ///           --> ProxyTrait::Base = ProxyBase         (holds references to those events/fields in events_/fields_)
+    ///
+    /// C++ destruction order:
+    ///   1. ~ProxyWrapperClass body
+    ///   2. ~MyInterface body, then its members (some_event/some_field/some_method) destroyed
+    ///   3. ~ProxyBase body, then its members (events_ map of references, proxy_binding_) destroyed
+    ///
+    /// By step 3 the events and fields are gone, so any binding callback that still touches them would be
+    /// a use-after-free. PrepareDeinitialize has to run at step 1 while they are still around.
+    virtual void PrepareDeinitialize() = 0;
+
+    /// Called by ProxyBase::Deinitialize after the service elements have been unsubscribed.
+    virtual void FinalizeDeinitialize() = 0;
 };
 
 }  // namespace score::mw::com::impl
