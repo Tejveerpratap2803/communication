@@ -1200,6 +1200,8 @@ TEST_F(SkeletonPrepareOfferUnsubscribeFixture, PrepareOfferWillRegisterServiceMe
 
     // Then a valid result is returned
     EXPECT_TRUE(result.has_value());
+
+    skeleton_->PrepareStopOffer({});
 }
 
 TEST_F(SkeletonPrepareOfferUnsubscribeFixture, PrepareOfferOnAsilBSkeletonRegistersQmAndAsilBUnsubscribedHandlers)
@@ -1218,6 +1220,8 @@ TEST_F(SkeletonPrepareOfferUnsubscribeFixture, PrepareOfferOnAsilBSkeletonRegist
 
     // Then a valid result is returned
     EXPECT_TRUE(result.has_value());
+
+    skeleton_->PrepareStopOffer({});
 }
 
 TEST_F(SkeletonPrepareOfferUnsubscribeFixture,
@@ -1273,18 +1277,24 @@ TEST_F(SkeletonPrepareOfferUnsubscribeFixture, PrepareOfferWillNotCallUnregister
 {
     GivenAnAsilBSkeletonWithTwoMethods();
 
-    // Expecting that RegisterOnServiceMethodUnsubscribedHandler will be called for QM and ASIL-B
+    // Enforce ordering: both Registers happen first (during PrepareOffer), and only then are the matching Unregisters
+    // called (during PrepareStopOffer). If PrepareOffer wrongly issued an Unregister it would not match the next
+    // expected Register and the test would fail.
+    InSequence seq{};
     EXPECT_CALL(message_passing_mock_,
                 RegisterOnServiceMethodUnsubscribedHandler(QualityType::kASIL_QM, skeleton_instance_identifier_, _));
     EXPECT_CALL(message_passing_mock_,
                 RegisterOnServiceMethodUnsubscribedHandler(QualityType::kASIL_B, skeleton_instance_identifier_, _));
-
-    // Expecting that UnregisterOnServiceMethodUnsubscribedHandler will not be called
-    EXPECT_CALL(message_passing_mock_, UnregisterOnServiceMethodUnsubscribedHandler(_, _)).Times(0);
+    EXPECT_CALL(message_passing_mock_,
+                UnregisterOnServiceMethodUnsubscribedHandler(QualityType::kASIL_QM, skeleton_instance_identifier_));
+    EXPECT_CALL(message_passing_mock_,
+                UnregisterOnServiceMethodUnsubscribedHandler(QualityType::kASIL_B, skeleton_instance_identifier_));
 
     // When calling PrepareOffer
     score::cpp::ignore = skeleton_->PrepareOffer(
         kEmptyEventBindings, kEmptyFieldBindings, std::move(kEmptyRegisterShmObjectTraceCallback));
+
+    skeleton_->PrepareStopOffer({});
 }
 
 TEST_F(SkeletonPrepareStopOfferFixture, UnregistersQmAndAsilBUnsubscribedMethodHandlers)
@@ -1345,6 +1355,8 @@ TEST_F(SkeletonOnServiceMethodsUnsubscribedFixture, CallingRemovesShmResource)
     // and the reference counter for the methods SharedMemoryResource should be decremented, indicating it's been
     // removed from the Skeleton's state
     EXPECT_EQ(mock_method_memory_resource_qm_.use_count(), shm_resource_ref_counter_after_subscribe - 1U);
+
+    skeleton_->PrepareStopOffer({});
 }
 
 TEST_F(SkeletonOnServiceMethodsUnsubscribedFixture, CallingUnregistersMethodCallHandlersForAllMethods)
@@ -1375,6 +1387,8 @@ TEST_F(SkeletonOnServiceMethodsUnsubscribedFixture, CallingUnregistersMethodCall
     // Then the result is valid
     ASSERT_TRUE(unsubscribe_result.has_value());
     ASSERT_TRUE(unsubscribe_result->has_value());
+
+    skeleton_->PrepareStopOffer({});
 }
 
 }  // namespace
