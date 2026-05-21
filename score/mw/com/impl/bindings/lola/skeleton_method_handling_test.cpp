@@ -279,6 +279,8 @@ TEST_F(SkeletonPrepareOfferFixture, PrepareOfferWillRegisterServiceMethodSubscri
 
     // Then a valid result is returned
     EXPECT_TRUE(result.has_value());
+
+    skeleton_->PrepareStopOffer({});
 }
 
 TEST_F(SkeletonPrepareOfferFixture, PrepareOfferOnAsilBSkeletonWillRegisterQmAndAsilBServiceMethodSubscribedHandler)
@@ -298,6 +300,8 @@ TEST_F(SkeletonPrepareOfferFixture, PrepareOfferOnAsilBSkeletonWillRegisterQmAnd
 
     // Then a valid result is returned
     EXPECT_TRUE(result.has_value());
+
+    skeleton_->PrepareStopOffer({});
 }
 
 TEST_F(SkeletonPrepareOfferFixture, PrepareOfferReturnsErrorIfRegisterServiceMethodSubscribedHandlerReturnsError)
@@ -373,6 +377,8 @@ TEST_F(SkeletonPrepareOfferFixture, PrepareOfferWillNotRegisterServiceMethodSubs
 
     // Then a valid result is returned
     EXPECT_TRUE(result.has_value());
+
+    skeleton_->PrepareStopOffer({});
 }
 
 TEST_F(SkeletonPrepareOfferFixture, PrepareOfferWillNotRegisterServiceMethodSubscribedHandlerWhenNoMethodsExistAsilB)
@@ -393,6 +399,8 @@ TEST_F(SkeletonPrepareOfferFixture, PrepareOfferWillNotRegisterServiceMethodSubs
 
     // Then a valid result is returned
     EXPECT_TRUE(result.has_value());
+
+    skeleton_->PrepareStopOffer({});
 }
 
 TEST_F(SkeletonPrepareOfferFixture, PrepareOfferWillNotCallUnregisterSubscribedMethodHandler)
@@ -405,12 +413,23 @@ TEST_F(SkeletonPrepareOfferFixture, PrepareOfferWillNotCallUnregisterSubscribedM
     EXPECT_CALL(message_passing_mock_,
                 RegisterOnServiceMethodSubscribedHandler(QualityType::kASIL_B, skeleton_instance_identifier_, _, _));
 
-    // Expecting that UnregisterOnServiceMethodSubscribedHandler will not be called for each method for QM and ASIL-B
-    EXPECT_CALL(message_passing_mock_, UnregisterOnServiceMethodSubscribedHandler(_, _)).Times(0);
+    // Expecting that UnregisterOnServiceMethodSubscribedHandler will NOT be called during PrepareOffer
+    EXPECT_CALL(message_passing_mock_,
+                UnregisterOnServiceMethodSubscribedHandler(QualityType::kASIL_QM, skeleton_instance_identifier_))
+        .Times(0);
+    EXPECT_CALL(message_passing_mock_,
+                UnregisterOnServiceMethodSubscribedHandler(QualityType::kASIL_B, skeleton_instance_identifier_))
+        .Times(0);
 
     // When calling PrepareOffer
     score::cpp::ignore = skeleton_->PrepareOffer(
         kEmptyEventBindings, kEmptyFieldBindings, std::move(kEmptyRegisterShmObjectTraceCallback));
+
+    // Verify that no Unregister was called during PrepareOffer, then clear expectations so that
+    // PrepareStopOffer (which legitimately triggers Unregister) does not fail the already-verified constraint.
+    Mock::VerifyAndClearExpectations(&message_passing_mock_);
+
+    skeleton_->PrepareStopOffer({});
 }
 
 TEST_F(SkeletonPrepareOfferFixture, CallingAsilBWillUnregisterQmHandlerOnAsilBRegistrationFailure)
@@ -589,6 +608,8 @@ TEST_F(SkeletonOnServiceMethodsSubscribedFixture,
     // Then the handler should return a valid result
     ASSERT_TRUE(scoped_handler_result.has_value());
     ASSERT_TRUE(scoped_handler_result->has_value());
+
+    skeleton_->PrepareStopOffer({});
 }
 
 TEST_F(SkeletonOnServiceMethodsSubscribedFixture,
@@ -630,6 +651,8 @@ TEST_F(SkeletonOnServiceMethodsSubscribedFixture,
 
     ASSERT_TRUE(scoped_handler_result_b.has_value());
     ASSERT_TRUE(scoped_handler_result_b->has_value());
+
+    skeleton_->PrepareStopOffer({});
 }
 
 TEST_F(SkeletonOnServiceMethodsSubscribedFixture, CallingReturnsErrorIfRegisteringMethodCallHandlerReturnedError)
@@ -653,6 +676,8 @@ TEST_F(SkeletonOnServiceMethodsSubscribedFixture, CallingReturnsErrorIfRegisteri
     ASSERT_TRUE(scoped_handler_result.has_value());
     ASSERT_FALSE(scoped_handler_result->has_value());
     EXPECT_EQ(scoped_handler_result->error(), error_code);
+
+    skeleton_->PrepareStopOffer({});
 }
 
 TEST_F(SkeletonOnServiceMethodsSubscribedFixture, CallingOpensShmIfAlreadyCalledWithDifferentApplicationIdAndSamePid)
@@ -683,6 +708,8 @@ TEST_F(SkeletonOnServiceMethodsSubscribedFixture, CallingOpensShmIfAlreadyCalled
 
     // Then the result should be valid
     EXPECT_TRUE(scoped_handler_result.has_value());
+
+    skeleton_->PrepareStopOffer({});
 }
 
 TEST_F(SkeletonOnServiceMethodsSubscribedFixture,
@@ -714,6 +741,8 @@ TEST_F(SkeletonOnServiceMethodsSubscribedFixture,
 
     // Then the result should be valid
     EXPECT_TRUE(scoped_handler_result.has_value());
+
+    skeleton_->PrepareStopOffer({});
 }
 
 TEST_F(SkeletonOnServiceMethodsSubscribedFixture,
@@ -743,6 +772,8 @@ TEST_F(SkeletonOnServiceMethodsSubscribedFixture,
 
     // Then the result should be valid
     EXPECT_TRUE(scoped_handler_result.has_value());
+
+    skeleton_->PrepareStopOffer({});
 }
 
 TEST_F(SkeletonOnServiceMethodsSubscribedFixture, CallingDoesNotOpenShmIfAlreadyCalledWithSameProxyInstanceIdAndPid)
@@ -768,6 +799,8 @@ TEST_F(SkeletonOnServiceMethodsSubscribedFixture, CallingDoesNotOpenShmIfAlready
 
     // Then the result should be valid
     EXPECT_TRUE(scoped_handler_result.has_value());
+
+    skeleton_->PrepareStopOffer({});
 }
 
 TEST_F(SkeletonOnServiceMethodsSubscribedFixture, CallingRemovesOldRegionsFromCallWithSameApplicationIdAndDifferentPid)
@@ -802,6 +835,8 @@ TEST_F(SkeletonOnServiceMethodsSubscribedFixture, CallingRemovesOldRegionsFromCa
     // Then the reference counter for the first methods SharedMemoryResource should be have been decremented,
     // indicating that it's been removed from the Skeleton's state
     EXPECT_EQ(mock_method_memory_resource_qm_.use_count(), first_initial_shm_resource_ref_counter);
+
+    skeleton_->PrepareStopOffer({});
 }
 
 TEST_F(SkeletonOnServiceMethodsSubscribedFixture, CallingRegistersAMethodCallHandlerPerMethodWithInfoFromMethodData)
@@ -848,6 +883,8 @@ TEST_F(SkeletonOnServiceMethodsSubscribedFixture, CallingRegistersAMethodCallHan
                                      proxy_instance_identifier_qm_,
                                      test::kAllowedQmMethodConsumer,
                                      kDummyPid);
+
+    skeleton_->PrepareStopOffer({});
 }
 
 TEST_F(SkeletonOnServiceMethodsSubscribedFixture, CallingQmOpensSharedMemoryWithProxyUidAsAllowedProvider)
@@ -874,6 +911,8 @@ TEST_F(SkeletonOnServiceMethodsSubscribedFixture, CallingQmOpensSharedMemoryWith
 
     // Then the result should be valid
     EXPECT_TRUE(scoped_handler_result.has_value());
+
+    skeleton_->PrepareStopOffer({});
 }
 
 TEST_F(SkeletonOnServiceMethodsSubscribedFixture, CallingAsilBOpensSharedMemoryWithProxyUidAsAllowedProvider)
@@ -900,6 +939,8 @@ TEST_F(SkeletonOnServiceMethodsSubscribedFixture, CallingAsilBOpensSharedMemoryW
 
     // Then the result should be valid
     EXPECT_TRUE(scoped_handler_result.has_value());
+
+    skeleton_->PrepareStopOffer({});
 }
 
 TEST_F(SkeletonOnServiceMethodsSubscribedFixture, CallingStoresSharedMemoryInClassState)
@@ -918,6 +959,8 @@ TEST_F(SkeletonOnServiceMethodsSubscribedFixture, CallingStoresSharedMemoryInCla
     // Then the reference counter for the methods SharedMemoryResource should be incremented, indicating that it's
     // been stored in the Skeleton's state
     EXPECT_EQ(mock_method_memory_resource_qm_.use_count(), initial_shm_resource_ref_counter + 1U);
+
+    skeleton_->PrepareStopOffer({});
 }
 
 TEST_F(SkeletonOnServiceMethodsSubscribedFixture, FailingToOpenSharedMemoryReturnsError)
@@ -938,6 +981,8 @@ TEST_F(SkeletonOnServiceMethodsSubscribedFixture, FailingToOpenSharedMemoryRetur
     ASSERT_TRUE(scoped_handler_result.has_value());
     ASSERT_FALSE(scoped_handler_result->has_value());
     EXPECT_EQ(scoped_handler_result->error(), ComErrc::kBindingFailure);
+
+    skeleton_->PrepareStopOffer({});
 }
 
 TEST_F(SkeletonOnServiceMethodsSubscribedFixture, FailingToGetUsableBaseAddressForRetrievingMethodDataTerminates)
@@ -955,6 +1000,8 @@ TEST_F(SkeletonOnServiceMethodsSubscribedFixture, FailingToGetUsableBaseAddressF
                                                                       proxy_instance_identifier_qm_,
                                                                       test::kAllowedQmMethodConsumer,
                                                                       kDummyPid));
+
+    skeleton_->PrepareStopOffer({});
 }
 
 TEST_F(SkeletonOnServiceMethodsSubscribedFixture, CallingAsilQmWithoutInArgsOrReturnStillOpensSharedMemory)
@@ -973,6 +1020,8 @@ TEST_F(SkeletonOnServiceMethodsSubscribedFixture, CallingAsilQmWithoutInArgsOrRe
 
     // Then the result should be valid
     EXPECT_TRUE(scoped_handler_result.has_value());
+
+    skeleton_->PrepareStopOffer({});
 }
 
 TEST_F(SkeletonOnServiceMethodsSubscribedFixture, CallingAsilBWithoutInArgsOrReturnStillOpensSharedMemory)
@@ -991,6 +1040,8 @@ TEST_F(SkeletonOnServiceMethodsSubscribedFixture, CallingAsilBWithoutInArgsOrRet
 
     // Then the result should be valid
     EXPECT_TRUE(scoped_handler_result.has_value());
+
+    skeleton_->PrepareStopOffer({});
 }
 
 TEST_F(SkeletonOnServiceMethodsSubscribedFixture, CallingAsilBWillNotCallUnregisterMethodCallHandler)
@@ -1002,13 +1053,12 @@ TEST_F(SkeletonOnServiceMethodsSubscribedFixture, CallingAsilBWillNotCallUnregis
                 RegisterMethodCallHandler(QualityType::kASIL_QM, foo_proxy_method_identifier_qm_, _, _));
     EXPECT_CALL(message_passing_mock_,
                 RegisterMethodCallHandler(QualityType::kASIL_QM, dumb_proxy_method_identifier_qm_, _, _));
-
     EXPECT_CALL(message_passing_mock_,
                 RegisterMethodCallHandler(QualityType::kASIL_B, foo_proxy_method_identifier_b_, _, _));
     EXPECT_CALL(message_passing_mock_,
                 RegisterMethodCallHandler(QualityType::kASIL_B, dumb_proxy_method_identifier_b_, _, _));
 
-    // Expecting that UnregisterMethodCallHandler will not be called for each method for QM and ASIL-B
+    // Expecting that UnregisterMethodCallHandler will NOT be called during handler invocation
     EXPECT_CALL(message_passing_mock_, UnregisterMethodCallHandler(_, _)).Times(0);
 
     // When calling the registered method subscribed handler for both QM and AsilB
@@ -1025,6 +1075,12 @@ TEST_F(SkeletonOnServiceMethodsSubscribedFixture, CallingAsilBWillNotCallUnregis
                                                      test::kAllowedAsilBMethodConsumer,
                                                      kDummyPid);
     EXPECT_TRUE(scoped_handler_result_2.has_value());
+
+    // Verify that no Unregister was called during handler invocation, then clear expectations so that
+    // PrepareStopOffer (which legitimately triggers Unregister) does not fail the already-verified constraint.
+    Mock::VerifyAndClearExpectations(&message_passing_mock_);
+
+    skeleton_->PrepareStopOffer({});
 }
 
 TEST_F(SkeletonOnServiceMethodsSubscribedFixture, CallingWillUnregisterRegisteredMethodCallHandlersOnSubscriptionError)
@@ -1052,6 +1108,8 @@ TEST_F(SkeletonOnServiceMethodsSubscribedFixture, CallingWillUnregisterRegistere
                                                    test::kAllowedQmMethodConsumer,
                                                    kDummyPid);
     EXPECT_TRUE(scoped_handler_result.has_value());
+
+    skeleton_->PrepareStopOffer({});
 }
 
 TEST_F(SkeletonOnServiceMethodsSubscribedFixture,
@@ -1080,6 +1138,8 @@ TEST_F(SkeletonOnServiceMethodsSubscribedFixture,
                                                    test::kAllowedQmMethodConsumer,
                                                    kDummyPid);
     EXPECT_TRUE(scoped_handler_result.has_value());
+
+    skeleton_->PrepareStopOffer({});
 }
 
 }  // namespace
