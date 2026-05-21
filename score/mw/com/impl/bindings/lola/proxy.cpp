@@ -734,7 +734,7 @@ score::Result<void> Proxy::SetupMethods()
     return subscription_result;
 }
 
-void Proxy::TeardownMethods() noexcept
+void Proxy::CleanupMethods() noexcept
 {
     // Skip teardown if method SHM was never created (method_shm_resource_ is null, nothing to clean up).
     if (!are_proxy_methods_setup_.load())
@@ -760,7 +760,7 @@ void Proxy::TeardownMethods() noexcept
         {
             score::mw::log::LogWarn("lola")
                 << __func__ << " " << __LINE__
-                << " TeardownMethods: UnsubscribeServiceMethod failed with error: " << result.error();
+                << " CleanupMethods: UnsubscribeServiceMethod failed with error: " << result.error();
         }
     }
 
@@ -937,7 +937,8 @@ void Proxy::PrepareDeinitialize()
         "never fail since we check this in FinalizeDeinitialize).");
 
     StopProxyAutoReconnect();
-    prepare_deinitialize_called_ = true;
+    CleanupMethods();
+    prepare_unsubscribe_called_ = true;
 }
 
 void Proxy::FinalizeDeinitialize()
