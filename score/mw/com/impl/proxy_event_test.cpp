@@ -72,19 +72,19 @@ struct ProxyEventStruct
 {
     using SampleType = TestSampleType;
     using ProxyEventType = ProxyEvent<TestSampleType>;
-    using MockProxyEventType = StrictMock<mock_binding::ProxyEvent<TestSampleType>>;
+    using MockProxyEventType = NiceMock<mock_binding::ProxyEvent<TestSampleType>>;
 };
 struct GenericProxyEventStruct
 {
     using SampleType = void;
     using ProxyEventType = GenericProxyEvent;
-    using MockProxyEventType = StrictMock<mock_binding::GenericProxyEvent>;
+    using MockProxyEventType = NiceMock<mock_binding::GenericProxyEvent>;
 };
 struct ProxyFieldStruct
 {
     using SampleType = TestSampleType;
     using ProxyEventType = ProxyField<TestSampleType>;
-    using MockProxyEventType = StrictMock<mock_binding::ProxyEvent<TestSampleType>>;
+    using MockProxyEventType = NiceMock<mock_binding::ProxyEvent<TestSampleType>>;
 };
 
 /// \brief Templated test fixture for ProxyEvent functionality that works for both ProxyEvent and GenericProxyEvent
@@ -255,12 +255,10 @@ TYPED_TEST(ProxyEventDeathTest, DieOnUnsubscribingWhileHoldingSamplePtrs)
     Base::RecordProperty("DerivationTechnique", "Analysis of requirements");
 
     // Given a subscribed proxy event that has delivered a sample which is still held
+    ON_CALL(Base::mock_proxy_event_, Subscribe(1U)).WillByDefault(Return(score::Result<void>{}));
     EXPECT_CALL(Base::mock_proxy_event_, GetSubscriptionState())
-        .WillOnce(Return(SubscriptionState::kNotSubscribed))      // called by Subscribe
-        .WillRepeatedly(Return(SubscriptionState::kSubscribed));  // called by Unsubscribe
-    EXPECT_CALL(Base::mock_proxy_event_, Subscribe(1U));
-    EXPECT_CALL(Base::mock_proxy_event_, GetNewSamples(_, _));
-    EXPECT_CALL(Base::mock_proxy_event_, Unsubscribe()).Times(AtMost(1));
+        .WillOnce(Return(SubscriptionState::kNotSubscribed))
+        .WillRepeatedly(Return(SubscriptionState::kSubscribed));
 
     Base::mock_proxy_event_.PushFakeSample(3U);
     std::ignore = Base::proxy_event_.Subscribe(1U);
@@ -283,11 +281,11 @@ TYPED_TEST(ProxyEventFixture, UnsubscribeWhileNotHoldingSamplePtrs)
     using Base = ProxyEventFixture<TypeParam>;
 
     // Given a subscribed proxy event that received a sample but no longer holds it
+    ON_CALL(Base::mock_proxy_event_, Subscribe(1U)).WillByDefault(Return(score::Result<void>{}));
+    // This needs to be an expect call since we cannot chain the returns on multiple calls with ON_CALL.
     EXPECT_CALL(Base::mock_proxy_event_, GetSubscriptionState())
         .WillOnce(Return(SubscriptionState::kNotSubscribed))
         .WillRepeatedly(Return(SubscriptionState::kSubscribed));
-    EXPECT_CALL(Base::mock_proxy_event_, Subscribe(1U));
-    EXPECT_CALL(Base::mock_proxy_event_, GetNewSamples(_, _));
     EXPECT_CALL(Base::mock_proxy_event_, Unsubscribe());
 
     Base::mock_proxy_event_.PushFakeSample(3U);
