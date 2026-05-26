@@ -938,7 +938,7 @@ void Proxy::PrepareDeinitialize()
 
     StopProxyAutoReconnect();
     CleanupMethods();
-    prepare_unsubscribe_called_ = true;
+    prepare_deinitialize_called_ = true;
 }
 
 void Proxy::FinalizeDeinitialize()

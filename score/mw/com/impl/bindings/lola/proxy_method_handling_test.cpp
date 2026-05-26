@@ -150,8 +150,8 @@ class ProxyMethodHandlingFixture : public ProxyMockedMemoryFixture
     {
         if (proxy_ != nullptr)
         {
-            proxy_->PrepareUnsubscribe();
-            proxy_->FinalizeUnsubscribe();
+            proxy_->PrepareDeinitialize();
+            proxy_->FinalizeDeinitialize();
         }
         proxy_.reset();
     }
