@@ -937,6 +937,9 @@ void Proxy::PrepareDeinitialize()
         "never fail since we check this in FinalizeDeinitialize).");
 
     StopProxyAutoReconnect();
+    // CleanupMethods must be called after StopProxyAutoReconnect to ensure no concurrent
+    // ServiceAvailabilityChangeHandler callbacks are running, as they modify are_proxy_methods_subscribed_
+    // which is read without a lock in CleanupMethods.
     CleanupMethods();
     prepare_deinitialize_called_ = true;
 }

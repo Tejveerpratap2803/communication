@@ -1167,7 +1167,7 @@ TEST_F(SkeletonPrepareOfferUnsubscribeFixture, PrepareOfferWillRegisterServiceMe
     // Then a valid result is returned
     EXPECT_TRUE(result.has_value());
 
-    skeleton_->PrepareStopOffer({});
+    PrepareStopOffer();
 }
 
 TEST_F(SkeletonPrepareOfferUnsubscribeFixture, PrepareOfferOnAsilBSkeletonRegistersQmAndAsilBUnsubscribedHandlers)
@@ -1187,7 +1187,7 @@ TEST_F(SkeletonPrepareOfferUnsubscribeFixture, PrepareOfferOnAsilBSkeletonRegist
     // Then a valid result is returned
     EXPECT_TRUE(result.has_value());
 
-    skeleton_->PrepareStopOffer({});
+    PrepareStopOffer();
 }
 
 TEST_F(SkeletonPrepareOfferUnsubscribeFixture,
@@ -1260,7 +1260,7 @@ TEST_F(SkeletonPrepareOfferUnsubscribeFixture, PrepareOfferWillNotCallUnregister
     score::cpp::ignore = skeleton_->PrepareOffer(
         kEmptyEventBindings, kEmptyFieldBindings, std::move(kEmptyRegisterShmObjectTraceCallback));
 
-    skeleton_->PrepareStopOffer({});
+    PrepareStopOffer();
 }
 
 TEST_F(SkeletonPrepareStopOfferFixture, UnregistersQmAndAsilBUnsubscribedMethodHandlers)
@@ -1274,7 +1274,7 @@ TEST_F(SkeletonPrepareStopOfferFixture, UnregistersQmAndAsilBUnsubscribedMethodH
                 UnregisterOnServiceMethodUnsubscribedHandler(QualityType::kASIL_B, skeleton_instance_identifier_));
 
     // When calling PrepareStopOffer
-    skeleton_->PrepareStopOffer({});
+    PrepareStopOffer();
 }
 
 TEST_F(SkeletonPrepareStopOfferFixture, UnregistersOnlyQmUnsubscribedMethodHandlerForQmSkeleton)
@@ -1289,7 +1289,7 @@ TEST_F(SkeletonPrepareStopOfferFixture, UnregistersOnlyQmUnsubscribedMethodHandl
         .Times(0);
 
     // When calling PrepareStopOffer
-    skeleton_->PrepareStopOffer({});
+    PrepareStopOffer();
 }
 
 using SkeletonOnServiceMethodsUnsubscribedFixture = SkeletonMethodHandlingFixture;
@@ -1322,7 +1322,7 @@ TEST_F(SkeletonOnServiceMethodsUnsubscribedFixture, CallingRemovesShmResource)
     // removed from the Skeleton's state
     EXPECT_EQ(mock_method_memory_resource_qm_.use_count(), shm_resource_ref_counter_after_subscribe - 1U);
 
-    skeleton_->PrepareStopOffer({});
+    PrepareStopOffer();
 }
 
 TEST_F(SkeletonOnServiceMethodsUnsubscribedFixture, CallingUnregistersMethodCallHandlersForAllMethods)
@@ -1354,7 +1354,7 @@ TEST_F(SkeletonOnServiceMethodsUnsubscribedFixture, CallingUnregistersMethodCall
     ASSERT_TRUE(unsubscribe_result.has_value());
     ASSERT_TRUE(unsubscribe_result->has_value());
 
-    skeleton_->PrepareStopOffer({});
+    PrepareStopOffer();
 }
 
 }  // namespace
