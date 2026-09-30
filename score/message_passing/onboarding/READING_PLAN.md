@@ -1,42 +1,63 @@
-# 📖 The Message Passing Reading Plan — Your Daily Companion
+# 📖 The Message Passing Quest — Your 6-Day Adventure
 
-> **This is the ONLY file you need to open each day.**
-> It tells you **exactly what to read, in what order, and how long to spend** — down to the
-> hour and minute. It is built for an **average learner spending 5 hours per day**.
+> 🎮 **Welcome, explorer.** You're about to reverse-engineer a real piece of safety-critical
+> car software — the secret "postal system" that lets programs talk to each other. By the end,
+> you'll understand code that most senior engineers find intimidating. Let's turn that mountain
+> into a staircase.
 >
-> Beside this plan sits your reference book: **[LEARNING_GUIDE.md](LEARNING_GUIDE.md)**.
-> Whenever this plan says *"read guide §X"*, it means open that section in the guide.
+> **This is the ONLY file you open each day.** It's your quest map: it tells you exactly what to
+> read, in what order, how long to spend, and rewards you at every checkpoint.
 >
-> ### 🛑 BEGINNER? Start with Day 0 first.
-> If you only have **basic computer knowledge** (you're not already comfortable with C++
-> classes, pointers, threads, and sockets), **do [DAY_0_PREREQUISITES.md](DAY_0_PREREQUISITES.md)
-> before Day 1.** It teaches every concept the code assumes, in plain words. Skipping it means
-> you *will* get stuck on Day 1. It takes 1–2 days (5–10 hours).
+> Beside this map sits your spellbook: **[LEARNING_GUIDE.md](LEARNING_GUIDE.md)**.
+> Whenever the quest says *"read guide §X"*, flip your spellbook to that section.
 >
-> Already comfortable with intermediate C++ and basic OS ideas? You may skip Day 0 and start at
-> Day 1.
+> ### 🛑 BEGINNER? Do the tutorial level (Day 0) first.
+> If you only have **basic computer knowledge** (not yet comfy with C++ classes, pointers,
+> threads, sockets), clear **[DAY_0_PREREQUISITES.md](DAY_0_PREREQUISITES.md)** before Day 1.
+> It hands you every tool the quest assumes you're carrying. Skip it and you *will* fall into
+> the first pit on Day 1. (Takes 1–2 days.)
 >
-> **Total time to finish:**
-> - With Day 0 (beginner): **~7–8 days** (Day 0 is 1–2 days + 6 days of the plan).
-> - Without Day 0 (has background): **6 days × 5 hours = 30 hours.**
+> Already fluent in intermediate C++ and basic OS ideas? Skip the tutorial, start at Day 1.
+>
+> **Quest length:** ~7–8 days for a beginner (with Day 0), or 6 × 5-hour days if you're ready.
 
 ---
 
-## 🧭 How to use this file every day
+## 🏆 Your XP & Badge Board (fill it in as you go)
 
-1. Open **this** file. Find today's day.
-2. Follow each **time block** in order. Set a timer for each block.
-3. Read the listed file(s) **line by line**, top to bottom.
-4. After each block, write one or two sentences in your own words about what you just read.
-5. At the **end of the day**, answer the **"Prove You Learned It"** questions *from memory*.
-   Then check your answers against the linked proof.
-6. If you cannot answer a question, re-read that file the next morning before starting.
+Each day you clear earns a **badge**. Tick the box, feel the progress, don't break the chain. 🔗
 
-> ⏱️ **Legend:** 🟩 = easy/warm-up · 🟨 = medium · 🟥 = hard (go slow, re-read).
+| ✅ | Day | Badge you earn | Unlocked when you… |
+| --- | --- | --- | --- |
+| ☐ | Day 0 | 🧰 **Toolsmith** | Pass the Day 0 MCQ (12/15) |
+| ☐ | Day 1 | 📜 **Contract Reader** | Pass the Day 1 MCQ |
+| ☐ | Day 2 | ⚙️ **Engine Whisperer** | Pass the Day 2 MCQ |
+| ☐ | Day 3 | ✉️ **Mail Carrier** | Pass the Day 3 MCQ |
+| ☐ | Day 4 | 🏰 **Gatekeeper** | Pass the Day 4 MCQ |
+| ☐ | Day 5 | 🧵 **Tool Master** | Pass the Day 5 MCQ |
+| ☐ | Day 6 | 🎓 **Message Passing Master** | Pass the final exam |
+
+> 🔥 **Streak rule:** answer today's MCQ at 12/15 before starting tomorrow. Keep the chain alive!
 
 ---
 
-## 📂 The reading order at a glance
+## 🧭 The daily loop (how each day works)
+
+Each day follows the same fun rhythm — like an episode of a show:
+
+1. **🎬 The Hook** — a one-line teaser for what mystery you'll crack today.
+2. **🔮 Predict** — guess the answer to one question *before* you read (curiosity primer).
+3. **📖 The Blocks** — follow the timed reading blocks (set a timer per block).
+4. **🔍 Detective Task** — one concrete thing to *hunt down* in the code (not just read).
+5. **💡 The Aha!** — the single coolest insight of the day, your reward.
+6. **✅ Prove It + 🧪 MCQ** — lock it in, earn your badge.
+
+> ⏱️ **Difficulty legend:** 🟩 = easy/warm-up · 🟨 = medium · 🟥 = boss fight (go slow, re-read).
+> After each block, jot **one sentence** in your own words. That tiny habit doubles what you keep.
+
+---
+
+## 📂 The quest map at a glance
 
 ```mermaid
 graph LR
@@ -53,14 +74,70 @@ Always read **what the code promises** before **how it delivers**.
 
 ---
 
+## 🌍 Why this matters — where `message_passing` lives in the real car
+
+Before you read a single line, know *why this module exists in a real vehicle.* This isn't a toy —
+it's the **low-level foundation** that bigger communication middleware is built on top of.
+
+```mermaid
+graph TD
+    subgraph "Inside one ECU (a computer in the car) 🚗"
+        App1["App: Radar driver"] --> Lola
+        App2["App: Brake controller"] --> Lola
+        App3["App: Dashboard UI"] --> Lola
+        Lola["LoLa / mw::com<br/>(the big communication middleware:<br/>services, events, discovery)"]
+        Lola -->|uses for notifications & discovery| MP["📬 score::message_passing<br/>(YOU ARE LEARNING THIS)"]
+        MP --> OS["OS transport<br/>Unix sockets (Linux) / Dispatch (QNX)"]
+    end
+```
+
+> 📌 **Proof this is real, not made up:** the car's communication middleware doc says it plainly —
+> *"Underneath LoLa there is a generic n-to-1 message-passing layer with OS-specific backends…
+> LoLa uses it for the non-shared-memory signaling (notifications, discovery)"* in
+> [../../mw/com/doc/onboarding/README.md](../../mw/com/doc/onboarding/README.md#L310-L314) (section 3.10).
+
+**In plain words:** Apps in a car (radar, brakes, dashboard) don't call `message_passing` directly.
+They use a big friendly middleware called **LoLa** (`mw::com`). But LoLa itself needs a reliable way
+to send small control signals ("hey, new data is ready!", "who's offering this service?"). **That
+reliable way is the module you're about to learn.** You are studying the *engine block* that the
+rest of the car's software sits on.
+
+### 🧠 Practical mental anchors (keep these in mind every day)
+| The code concept… | …is really this real-world thing |
+| --- | --- |
+| **Server** with a named mailbox | A service in the car offering data (e.g. "RadarService") |
+| **Client** connecting by name | Another app that wants that data |
+| `Notify` (server → client push) | "New sensor sample is ready, come get it!" |
+| `SendWaitReply` | "Are you alive? Reply now." — a health/handshake check |
+| **Zero-allocation** design | Brakes can't pause for a memory hiccup at 120 km/h |
+| **QNX backend** | The safety-certified OS that actually ships in the car |
+| **ASIL-B vs QM** wording | Safety-critical code talking to non-safety code, carefully |
+
+> 💡 Every time a block feels abstract, ask: *"which of these real car things does this serve?"*
+> The answer is always in this table.
+
+---
+
 # 🗓️ DAY 1 — The Contracts (Interfaces) · 5 hours
 
 > ⚠️ **Gate:** If you're a beginner and haven't done
 > [DAY_0_PREREQUISITES.md](DAY_0_PREREQUISITES.md) yet, do it first — you should be able to
 > answer its 11 self-check questions before starting here.
 >
+> 🎬 **The Hook:** Every great system starts with a set of *promises*. Today you read the
+> "contracts" — the exact promises the client and server make to each other — **before** seeing
+> a single line of how they're kept. It's like reading a spy's mission briefing before the action.
+>
+> 🔮 **Predict first (don't peek):** A client wants to send a message but *also* get an answer
+> back. Do you think it should (a) freeze and wait, (b) get called back later, or (c) both be
+> possible? Write your guess, then find out today.
+>
 > **Today's mission:** Understand *what* the module promises before *how* it works.
 > Read guide **§1, §2, §3, §4** alongside these files.
+>
+> 🌍 **Real-world use:** These interfaces are the exact "job descriptions" LoLa fills in when
+> a car service (say `RadarService`) offers data and another app connects to it by name. Today you
+> read the contract that every in-car service silently signs.
 
 | Time | Duration | Difficulty | Read this | What to focus on |
 | --- | --- | --- | --- | --- |
@@ -75,6 +152,14 @@ Always read **what the code promises** before **how it delivers**.
 | 3:45–4:20 | 35 min | 🟨 | [../i_client_factory.h](../i_client_factory.h) + [../i_server_factory.h](../i_server_factory.h) | The `ClientConfig` / `ServerConfig` knobs and what each tunes. |
 | 4:20–4:35 | 15 min | 🟩 | [../client_server_communication.h](../client_server_communication.h) | The tiny wire protocol: `SEND, REQUEST, REPLY, NOTIFY`. |
 | 4:35–5:00 | 25 min | 🟨 | Guide [§3](LEARNING_GUIDE.md#3-the-core-vocabulary) + [§4](LEARNING_GUIDE.md#4-the-public-interfaces-the-contracts) | Re-read to lock in vocabulary. Answer the questions below. |
+
+> 🔍 **Detective Task:** Open [../i_client_connection.h](../i_client_connection.h) and hunt for
+> the exact comment that draws the **State diagram** in words. Copy the 4 state names in order.
+> (Hint: search for "Starting -->".) You just found the heartbeat of the whole client.
+>
+> 💡 **The Aha! of Day 1:** There are **three** ways to send — and the difference isn't *what*
+> you send, it's *how you wait*: not at all (`Send`), block right here (`SendWaitReply`), or get
+> tapped on the shoulder later (`SendWithCallback`). That one idea unlocks half the module.
 
 ### ✅ Day 1 — Prove You Learned It (answer from memory)
 1. In one sentence, what problem does this whole module solve? *(proof: guide §1)*
@@ -182,8 +267,20 @@ Always read **what the code promises** before **how it delivers**.
 
 # 🗓️ DAY 2 — The Engine & the OS Switch · 5 hours
 
+> 🎬 **The Hook:** Meet the engine room. Below deck runs **one tireless background thread** that
+> watches every mailbox and never sleeps on the job. Today you find out how one program can wait
+> for dozens of things at once without freezing — and how the *same* code runs on two different
+> operating systems.
+>
+> 🔮 **Predict first:** How does the code know whether to use the Linux or the QNX version — at
+> runtime (while running) or at compile time (while building)? Make your guess.
+>
 > **Today's mission:** Understand the shared plumbing (threads, sockets, timers, memory).
 > Read guide **§5, §6** alongside these files.
+>
+> 🌍 **Real-world use:** This one background thread is what lets a single ECU app watch dozens of
+> in-car connections at once without spawning a thread per connection — critical when CPU and
+> memory are tightly budgeted in an embedded controller.
 
 | Time | Duration | Difficulty | Read this | What to focus on |
 | --- | --- | --- | --- | --- |
@@ -196,6 +293,14 @@ Always read **what the code promises** before **how it delivers**.
 | 2:45–3:30 | 45 min | 🟨 | [../unix_domain/unix_domain_engine.h](../unix_domain/unix_domain_engine.h) | The Linux engine header: `thread_`, `poll_fds_`, `RunOnThread`, `IsOnCallbackThread`, the pipe-event trick. |
 | 3:30–4:45 | 75 min | 🟥 | [../unix_domain/unix_domain_engine.cpp](../unix_domain/unix_domain_engine.cpp) | The real poll loop. Follow `RunOnThread`, how endpoints are polled, how the timer queue is processed, how `CleanUpOwner` works. Go slow. |
 | 4:45–5:00 | 15 min | 🟨 | Recap | Re-draw the background-thread poll loop. Answer questions. |
+
+> 🔍 **Detective Task:** In [../unix_domain/unix_domain_engine.h](../unix_domain/unix_domain_engine.h),
+> find the `std::thread thread_;` member and the `poll_fds_` vector. These two together **are** the
+> engine room. Then find `IsOnCallbackThread()` — that one-liner prevents a whole class of deadlocks.
+>
+> 💡 **The Aha! of Day 2:** The engine is like a receptionist watching many phone lines 📞 — it
+> **sleeps** until *one* line rings (`poll`), answers it, then sleeps again. That's how it handles
+> many connections with a single thread and near-zero wasted CPU.
 
 ### ✅ Day 2 — Prove You Learned It
 1. How does the code decide whether to use QNX or Unix code? Which macro? *(proof: [../engine.h](../engine.h#L16-L20))*
@@ -307,8 +412,19 @@ Always read **what the code promises** before **how it delivers**.
 
 # 🗓️ DAY 3 — The Client Implementation · 5 hours
 
+> 🎬 **The Hook:** Today *you* become the mail carrier. You'll watch a friendly `Send("hello")`
+> call get turned into raw bytes and pushed down a socket — and you'll meet the module's cleverest
+> trick: a client that **never allocates memory** while running, no matter how many messages fly.
+>
+> 🔮 **Predict first:** If you must send messages but are forbidden from allocating memory at
+> runtime, how would *you* store the outgoing messages? Guess before you see the real answer.
+>
 > **Today's mission:** See how `ClientConnection` actually turns your calls into bytes.
 > Read guide **§7** alongside these files.
+>
+> 🌍 **Real-world use:** When the dashboard app subscribes to radar data, *this* client code runs.
+> The zero-allocation trick is exactly why a safety app can keep sending at highway speed without
+> ever risking a memory-allocation stall.
 
 | Time | Duration | Difficulty | Read this | What to focus on |
 | --- | --- | --- | --- | --- |
@@ -320,6 +436,14 @@ Always read **what the code promises** before **how it delivers**.
 | 3:15–4:15 | 60 min | 🟥 | [../client_connection.cpp](../client_connection.cpp) — part 2 | The three sends: `Send`, `SendWaitReply`, `SendWithCallback`; `TryQueueMessage`; `ProcessInputEvent`; `ProcessSendQueueUnderLock`. |
 | 4:15–4:40 | 25 min | 🟨 | [../unix_domain/unix_domain_client_factory.h](../unix_domain/unix_domain_client_factory.h) + `.cpp` | How the factory builds a `ClientConnection`. |
 | 4:40–5:00 | 20 min | 🟨 | [../client_connection_test.cpp](../client_connection_test.cpp) | Skim a real test to see the API used for real. Answer questions. |
+
+> 🔍 **Detective Task:** In [../client_connection.h](../client_connection.h) find the three
+> members `send_storage_`, `send_pool_`, `send_queue_`. Read the big comment above them and answer:
+> where does a message *live* before it's sent, and where does its slot go afterwards?
+>
+> 💡 **The Aha! of Day 3:** The "pool" trick is like a stack of reusable trays in a canteen 🍽️ —
+> grab a tray to carry a message, return it to the stack when done. No new trays are ever bought at
+> runtime. That's how it sends thousands of messages with **zero** heap allocation.
 
 ### ✅ Day 3 — Prove You Learned It
 1. Explain the "zero-allocation send pool." Why does it exist? *(proof: [../client_connection.h](../client_connection.h#L108-L132))*
@@ -431,8 +555,20 @@ Always read **what the code promises** before **how it delivers**.
 
 # 🗓️ DAY 4 — The Server Implementation · 5 hours
 
+> 🎬 **The Hook:** Now you flip sides and become the **gatekeeper**. One server, many clients,
+> all knocking at once. Today you discover how a server keeps every visitor in their own private
+> room — and a sneaky trick where a connection object literally **keeps itself alive** until it's
+> done.
+>
+> 🔮 **Predict first:** If 50 clients connect to one server at the same moment, how does the
+> server avoid mixing up their messages? Guess the mechanism before you read.
+>
 > **Today's mission:** See how one server serves many clients.
 > Read guide **§8, §10** alongside these files.
+>
+> 🌍 **Real-world use:** A single `RadarService` in the car may feed the dashboard, the braking
+> logic, and a logger — all at once. Today's per-client `ServerConnection` model is how one service
+> safely keeps those consumers separate and checks *who* (pid/uid/gid) is allowed to connect.
 
 | Time | Duration | Difficulty | Read this | What to focus on |
 | --- | --- | --- | --- | --- |
@@ -444,6 +580,14 @@ Always read **what the code promises** before **how it delivers**.
 | 3:15–3:45 | 30 min | 🟨 | [../unix_domain/unix_domain_server_factory.h](../unix_domain/unix_domain_server_factory.h) + `.cpp` | How servers are created and how they share the engine. |
 | 3:45–4:15 | 30 min | 🟨 | Guide [§10](LEARNING_GUIDE.md#10-how-a-message-actually-travels-full-flow) | The full end-to-end message-flow sequence diagram. |
 | 4:15–5:00 | 45 min | 🟨 | [../unix_domain_server_to_client_test.cpp](../unix_domain_server_to_client_test.cpp) | Read a full end-to-end test. Then answer questions. |
+
+> 🔍 **Detective Task:** In [../unix_domain/unix_domain_server.h](../unix_domain/unix_domain_server.h)
+> find the `self_` member inside `ServerConnection`. Ask yourself: *why would an object hold a
+> pointer to itself?* (Hint: it's about controlling its own lifetime until disconnect.)
+>
+> 💡 **The Aha! of Day 4:** One server = many little `ServerConnection` objects, one per client —
+> like a hotel with one front desk but a separate room key for every guest 🏰. That's why the
+> server interface is tiny but can juggle dozens of conversations at once.
 
 ### ✅ Day 4 — Prove You Learned It
 1. How does one server handle **many** clients at the same time? *(proof: [../i_server.h](../i_server.h#L26-L28))*
@@ -555,8 +699,20 @@ Always read **what the code promises** before **how it delivers**.
 
 # 🗓️ DAY 5 — Supporting Tools (Queue, Future, Log) · 5 hours
 
+> 🎬 **The Hook:** Every hero has a utility belt. Today you unpack the three gadgets that make
+> the whole system tick: a **scheduler** that never allocates, a **waiting device** that beats
+> `std::future` at its own game, and a **pluggable logger**. Small files, big payoff — this is
+> where the "one theme" of the whole module clicks into place.
+>
+> 🔮 **Predict first:** The standard `std::future` is the normal way to "wait for a result from
+> another thread." Why might a safety-critical car project *refuse* to use it? Guess, then confirm.
+>
 > **Today's mission:** Understand the small tools the engine relies on.
 > Read guide **§9** alongside these files.
+>
+> 🌍 **Real-world use:** These gadgets enforce the car's #1 rule: *never surprise-allocate memory.*
+> The timed queue schedules connection retries and timeouts; the non-allocating future powers a
+> blocking `SendWaitReply` health-check without touching the heap.
 
 | Time | Duration | Difficulty | Read this | What to focus on |
 | --- | --- | --- | --- | --- |
@@ -569,6 +725,14 @@ Always read **what the code promises** before **how it delivers**.
 | 3:40–3:55 | — | ☕ | **Break** | |
 | 3:55–4:30 | 35 min | 🟨 | [../log/logging_callback.h](../log/logging_callback.h) + [../log/log.h](../log/log.h) | `LogSeverity`, `LogItem` variant, `GetCerrLogger`, the `LogConvert` helpers. |
 | 4:30–5:00 | 30 min | 🟨 | [../non_allocating_future/non_allocating_future_samples_test.cpp](../non_allocating_future/non_allocating_future_samples_test.cpp) | See the future used in practice. Answer questions. |
+
+> 🔍 **Detective Task:** Read the top of
+> [../non_allocating_future/README.md](../non_allocating_future/README.md) and find the one
+> sentence that explains *why* `std::future` is avoided. That sentence is the soul of this module.
+>
+> 💡 **The Aha! of Day 5:** Intrusive lists, `NonAllocatingFuture`, and the send pool are all the
+> **same idea wearing different hats** 🎩: *do the work without ever allocating memory at runtime.*
+> Once you see it, the "weird" code stops looking weird and starts looking brilliant.
 
 ### ✅ Day 5 — Prove You Learned It
 1. Why does `TimedCommandQueue` use an **intrusive list** instead of a normal container? *(proof: [../timed_command_queue.h](../timed_command_queue.h#L26-L30) + guide §9.1)*
@@ -680,8 +844,19 @@ Always read **what the code promises** before **how it delivers**.
 
 # 🗓️ DAY 6 — QNX World + Final Review · 5 hours
 
+> 🎬 **The Hook:** The final boss. You cross into **QNX** — the safety-certified OS that actually
+> ships inside cars — and see the *same postal system* rebuilt with totally different tools. Then
+> you rebuild the entire module in your own head, from memory, and claim your master badge. 🎓
+>
+> 🔮 **Predict first:** Linux uses sockets. QNX doesn't. What do you think QNX uses to create a
+> *named service* that clients can find? Guess before you meet the "Resource Manager."
+>
 > **Today's mission:** Understand the QNX structure (don't master it unless you deploy there),
 > then rebuild the whole module in your head. Read guide **§11, §12**.
+>
+> 🌍 **Real-world use:** This is the code that *actually runs in the shipped car.* Linux was your
+> practice track; QNX is race day. Seeing both behind the same interfaces is the whole reason the
+> app code above (LoLa and its services) never has to change when the car's OS does.
 
 | Time | Duration | Difficulty | Read this | What to focus on |
 | --- | --- | --- | --- | --- |
@@ -694,6 +869,14 @@ Always read **what the code promises** before **how it delivers**.
 | 2:45–3:30 | 45 min | 🟨 | Guide [§11](LEARNING_GUIDE.md#11-revision-notes-quick-cheat-sheet) | Read the cheat sheet slowly. Fill any gaps by re-reading. |
 | 3:30–4:30 | 60 min | 🟥 | **Blank-page test** | On a blank sheet redraw: the 4-layer diagram, the State machine, and the message-flow sequence — all from memory. |
 | 4:30–5:00 | 30 min | 🟨 | Guide [§12](LEARNING_GUIDE.md#12-line-by-line-reading-plan-day-by-day-5-hrsday) + this file | Final review. Answer the comprehensive questions below. |
+
+> 🔍 **Detective Task:** In [../qnx_dispatch/qnx_dispatch_engine.h](../qnx_dispatch/qnx_dispatch_engine.h)
+> find `ResourceManagerServer` and `ResourceManagerConnection`. Match each to its Linux twin from
+> Day 4 (`UnixDomainServer` and its `ServerConnection`). Same idea, different OS — spot it yourself.
+>
+> 💡 **The Aha! of Day 6:** Linux and QNX look completely different in code, yet do the **exact
+> same job** behind the same interfaces. *That's* the superpower of the whole design: swap the
+> engine, keep the app. You now understand why every `i_*` interface existed in the first place.
 
 ### ✅ Day 6 — Final Comprehensive Test (covers ALL days)
 1. **(Day 1)** State the module's purpose and its 4 architecture layers.
@@ -813,7 +996,37 @@ Always read **what the code promises** before **how it delivers**.
 
 ---
 
-## 🔁 If you fall behind or want to go slower
+## �️ Hands-on: don't just read — RUN it (do this from Day 3 onward)
+
+> Reading is 70% of learning here; *running the real tests* is the other 30%. These are the
+> **actual test targets** from the module's [../BUILD](../BUILD) file — they exist and work today.
+
+**Build & run all the module's unit tests** (from the repo root):
+```bash
+bazel test //score/message_passing:unit_tests
+```
+
+**Run just today's relevant test** to see that piece work in isolation:
+| After Day | Run this real target | You'll watch… |
+| --- | --- | --- |
+| Day 3 (Client) | `bazel test //score/message_passing:client_connection_test` | a client connect, send, and stop |
+| Day 4 (Server) | `bazel test //score/message_passing:unix_domain_test` | a full server↔client conversation on Linux |
+| Day 5 (Tools) | `bazel test //score/message_passing:timed_command_queue_test` | the scheduler ordering commands |
+| Day 5 (Future) | `bazel test @score_communication//score/message_passing/non_allocating_future:non_allocating_future_test` | the future block and wake up |
+| Day 5 (Log) | `bazel test @score_communication//score/message_passing/log:log_test` | the logger formatting items |
+
+> 🧪 **Tinker challenge (huge payoff):** After Day 4, open
+> [../unix_domain_server_to_client_test.cpp](../unix_domain_server_to_client_test.cpp), change a
+> message string or a buffer size, re-run the test, and predict what breaks *before* you see the
+> result. Making the code fail *on purpose* teaches more than reading it ten times.
+>
+> 💥 **Debug like a pro:** add a `std::cout` print (or a breakpoint) inside `ProcessInput` on the
+> server and inside `ProcessInputEvent` on the client, then run a test. Watching the two sides
+> fire in real time makes the whole message flow *click*.
+
+---
+
+## �🔁 If you fall behind or want to go slower
 
 - This plan assumes **6 days**. If you're an average learner having a hard week, split each
   🟥 (hard) block across two sittings and stretch to **8–9 days** — that's completely fine.
