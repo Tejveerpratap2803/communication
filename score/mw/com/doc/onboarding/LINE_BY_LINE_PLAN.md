@@ -31,6 +31,13 @@ This is the **exact, sequential** plan. Every step tells you: **open this file �
 lines → look for this → when done, go to the next step.** No vague pointers. Just do them in
 order and tick the box.
 
+> 🎬 **Keep it fun, not a chore:** each day opens with a 3‑line story block —
+> 📖 *Story so far* (where you are in the journey), 🚗 *Where this fits* (a real car/app example
+> so the code isn't abstract), and 💡 *Aha you're chasing* (the one cool insight to hunt for that
+> day). If a day ever feels dry, jump to [MENTAL_MODEL.md](MENTAL_MODEL.md) for the picture‑book
+> version, then come back here to do the work. **This file is your workbench, not a novel — you
+> learn by *doing* the steps, not just reading them.**
+
 > All line numbers were verified against the current source. If a line is off by a little
 > (code moves), the **named function/class** in the step is the true anchor — search for it.
 
@@ -196,6 +203,18 @@ everything in this plan is a detail of that one sentence.
 
 # DAY 1 — Public API surface (the front door) · 5h
 
+`🏁 Day 1 of 10  [■□□□□□□□□□]  You're at the front door — let's open it.`
+
+> 📖 **Story so far:** You know the big idea (provider shares data in a room, consumer reads it).
+> Today you meet the *doorknobs* — the exact functions a real app touches.
+>
+> 🚗 **Where this fits (real car example):** Imagine a **speed sensor app** and a **dashboard app**
+> in a car. The dashboard needs the speed 100×/second. Everything you learn today (`AsSkeleton`,
+> `AsProxy`, `SamplePtr`) is the vocabulary those two apps use to hand speed values back and forth.
+>
+> 💡 **Aha you're chasing today:** "A user never touches the scary `impl/` code — there's *one*
+> tiny header (`types.h`) that's the whole public menu."
+
 > 🔑 **New words today:** *API* = the set of functions you're allowed to call (the "buttons on
 > the machine"). *Header (`.h`) file* = a list of what functions/types exist. *Alias* = nickname.
 
@@ -293,6 +312,18 @@ method ptrs (98,103); `EventReceiveHandler` (108); field tags `WithGetter/WithSe
 
 # DAY 2 — The tutorial, end to end · 5h
 
+`🏁 Day 2 of 10  [■■□□□□□□□□]  Today you run your first real LoLa program!`
+
+> 📖 **Story so far:** You've seen the doorknobs. Today you watch a **real working program** use
+> them end to end — and you run it yourself.
+>
+> 🚗 **Where this fits:** This "Hello World" IS the speed-sensor→dashboard story in miniature.
+> The provider = the sensor publishing values; the consumer = the dashboard reading them. Same
+> shape a real car ECU uses, just with the word "message" instead of "speed".
+>
+> 💡 **Aha you're chasing today:** "Two totally separate programs, started independently, find
+> each other and share data with **zero network, zero copying** — just a shared room and a name."
+
 > 🔑 **New words today:**
 > - *Callback / lambda* — a little function you hand to another function to run later. Written
 >   `[capture](args){ body }`. In `GetNewSamples([](auto&& s){ ... }, 1)`, the `[](auto&& s){...}`
@@ -383,6 +414,20 @@ method ptrs (98,103); `EventReceiveHandler` (108); field tags `WithGetter/WithSe
 ---
 
 # DAY 3 — Traits + wrapper magic (HARD — go slow) · 5h
+
+`🏁 Day 3 of 10  [■■■□□□□□□□]  You can already build & run a service — now the magic.`
+
+> 📖 **Story so far:** You've *used* `AsSkeleton` and `AsProxy`. Today you lift the hood and see
+> the clever trick that makes them work. This is the "wow" day.
+>
+> 🚗 **Where this fits:** In a real project a code generator spits out dozens of service
+> interfaces (BrakeService, RadarService, …). This one trait trick means the SAME generated
+> interface works as both the sender (in the sensor app) and the receiver (in the dashboard app)
+> — no duplicated code. That's a huge real-world maintenance win.
+>
+> 💡 **Aha you're chasing today:** "One interface + a swappable 'personality' = it becomes a
+> sender OR a receiver, decided by the compiler for free. And the object 'magically' has
+> `OfferService()` only because of plain inheritance."
 
 > 🔑 **New words today:** *Trait* = a "personality pack" you plug into a template to change what
 > it becomes. *Wrapper* = a class that puts a thin extra layer on top of another (here it adds
@@ -482,6 +527,19 @@ Mark which layer provides `Create`, `message`, and `OfferService`.
 
 # DAY 4 — Provider core: `OfferService` internals · 5h
 
+`🏁 Day 4 of 10  [■■■■□□□□□□]  You understand the magic trick — now the engine room.`
+
+> 📖 **Story so far:** You called `OfferService()` on Day 2 and it "just worked." Today you find
+> out everything it secretly does in the half-second it runs.
+>
+> 🚗 **Where this fits:** When the brake-control ECU boots, it calls `OfferService()` once. If
+> ANY step fails (no shared memory, a missing handler), the car must NOT end up half-offering a
+> safety service. Today's "rollback guards" are literally what keeps a safety system safe on a
+> bad startup.
+>
+> 💡 **Aha you're chasing today:** "`OfferService` is like a checklist with an undo button at
+> every step — if step 5 fails, steps 1–4 automatically un-happen. No half-broken services."
+
 > 🔑 **New words today** (all in the Day‑0 jargon buster): *ctor*, *SHM*, *factory*,
 > *rollback/ScopeExit guard*, *mock*. 🧠 Goal: see exactly what `OfferService()` does, in order,
 > and how it safely **undoes itself** if a step fails halfway.
@@ -577,6 +635,18 @@ private `OfferServiceEvents/Fields` (112/113), and `GetInstanceIdentifier` free 
 
 # DAY 5 — Consumer core: find / subscribe / receive · 5h
 
+`🏁 Day 5 of 10  [■■■■■□□□□□]  Halfway! Provider side done — now the consumer.`
+
+> 📖 **Story so far:** You've seen how the provider offers. Today you flip to the other side:
+> how the consumer finds it and starts receiving.
+>
+> 🚗 **Where this fits:** The dashboard app might boot BEFORE the speed sensor. It can't just
+> crash. Today's `FindService` loop + `StartFindService` callback are exactly how a real app
+> waits patiently for a service to appear (and reacts if it disappears while driving).
+>
+> 💡 **Aha you're chasing today:** "The consumer code is surprisingly *thin* — it barely does
+> anything itself; it just politely asks the Runtime's discovery to do the work."
+
 > 🔑 **New words today:** *delegate/forward* (pass work to the runtime), *sync vs async*
 > discovery, *handle* (ticket to a found service). 🧠 Goal: see that the consumer side is thin —
 > it mostly forwards to the Runtime's ServiceDiscovery — and understand subscribe vs receive.
@@ -658,6 +728,18 @@ Read [API_DEEP_DIVE.md](API_DEEP_DIVE.md) Part 2 first (30m).
 
 # DAY 6 — Discovery, identity & config · 5h
 
+`🏁 Day 6 of 10  [■■■■■■□□□□]  You know both sides — now how they find each other.`
+
+> 📖 **Story so far:** Both sides call "find" and "offer" — but HOW do two separate programs
+> actually locate each other? Today you find the real mechanism.
+>
+> 🚗 **Where this fits:** A car has ONE config file describing every service (which app offers
+> what, how many data slots, who's allowed to listen). Change the deployment (move a service to
+> another chip) and you edit the config — not the code. Today shows why that flexibility exists.
+>
+> 💡 **Aha you're chasing today:** "There's no magic network — one program literally drops a
+> **file on disk** saying 'I'm here', and the other watches for that file. Beautifully simple."
+
 ### Block A (90m) — the discovery implementation
 **Step 6.1** — 📄 [../../impl/i_service_discovery.h](../../impl/i_service_discovery.h) (whole)
 👀 the interface: `OfferService`, `StopOfferService`, `StartFindService`, `FindService`.
@@ -730,6 +812,19 @@ Read [API_DEEP_DIVE.md](API_DEEP_DIVE.md) Part 2 first (30m).
 ---
 
 # DAY 7 — Runtime singleton + mocks · 5h
+
+`🏁 Day 7 of 10  [■■■■■■■□□□]  Meet the shared brain behind everything.`
+
+> 📖 **Story so far:** Both proxy and skeleton kept calling `Runtime::getInstance()`. Today you
+> meet that shared "brain" and learn how tests fake it.
+>
+> 🚗 **Where this fits:** Every app in the car has exactly one Runtime that loaded that app's
+> config. And crucially — engineers must test brake logic on a laptop WITHOUT real shared memory
+> or a real car. Today's "mock" is how they run the code safely at their desk.
+>
+> 💡 **Aha you're chasing today:** "Because everything goes through one swappable `IRuntime`, you
+> can rip out the real shared-memory world and drop in a pretend one — that's how they test
+> safety code without a car."
 
 > 🔑 **New words today:** *singleton* = a class with exactly **one** shared instance for the whole
 > program (like the one town hall everyone visits). *Meyers singleton* = a common safe way to make
@@ -808,6 +903,19 @@ Read [API_DEEP_DIVE.md](API_DEEP_DIVE.md) Part 2 first (30m).
 ---
 
 # DAY 8 — Zero‑copy shared memory (HARD — go slow) · 5h
+
+`🏁 Day 8 of 10  [■■■■■■■■□□]  The heart of LoLa — how it's actually fast.`
+
+> 📖 **Story so far:** You've said "zero-copy" for a week. Today you finally SEE the actual
+> shared-memory machinery that makes it true. This is the heart of LoLa.
+>
+> 🚗 **Where this fits:** A camera app streams huge video frames to 3 other apps at 60fps.
+> Copying each frame 3× would melt the CPU. Instead, the frame sits ONCE in a shared slot and all
+> 3 readers look at the same bytes. Today you learn the slot + reference-count trick that makes
+> that safe. This is *the* reason LoLa exists.
+>
+> 💡 **Aha you're chasing today:** "Nothing big ever moves between programs — they just pass a
+> tiny counter around. 'Sharing' a 4MB frame costs almost nothing."
 
 > 🔑 **New words today:** *Slot* = one numbered spot in shared memory that holds one data item.
 > *Reference count* = a tally of how many readers currently hold a slot; the slot can't be reused
@@ -894,6 +1002,19 @@ Read [API_DEEP_DIVE.md](API_DEEP_DIVE.md) 1.3, 1.4, 2.4 first (40m).
 
 # DAY 9 — Robustness & crash recovery · 5h
 
+`🏁 Day 9 of 10  [■■■■■■■■■□]  Almost there — what makes it a *safety* system.`
+
+> 📖 **Story so far:** You know how data flows when everything works. Today: what happens when a
+> program **crashes** mid-read — the difference between a toy and a safety system.
+>
+> 🚗 **Where this fits:** A passenger app crashes while holding 3 video slots. In a car that can't
+> mean the camera service leaks memory until it dies too. Today's transaction log is what lets the
+> system clean up a dead app's mess and keep driving — the stuff that earns the "ASIL-B" badge.
+>
+> 💡 **Aha you're chasing today:** "LoLa keeps a little written ledger of 'who holds what', so if
+> an app dies, someone else can walk in, read the ledger, and undo its leftovers. That's why a
+> crash doesn't poison the whole system."
+
 > 🔑 **New words today:** *state machine* = something that can only be in one of a few named
 > states and moves between them by rules (e.g. not‑subscribed → pending → subscribed).
 > *Transaction log* = a written record of "who is holding what," so if a program crashes we can
@@ -971,6 +1092,19 @@ Read [API_DEEP_DIVE.md](API_DEEP_DIVE.md) 1.3, 1.4, 2.4 first (40m).
 ---
 
 # DAY 10 — Generic API, methods, fields, tracing + capstone · 5h
+
+`🏁 Day 10 of 10  [■■■■■■■■■■]  Final stretch — fill the gaps and BUILD your own!`
+
+> 📖 **Story so far:** You've mastered events (one-way streams). Today you fill in the last
+> shapes — request/reply **methods**, read/write **fields** — and then BUILD something yourself.
+>
+> 🚗 **Where this fits:** "Set the cabin temperature to 21°" is a **field** (a value you set and
+> others watch). "Calculate route to home" is a **method** (ask a question, get an answer). A
+> **generic** proxy is what a logging/gateway tool uses to record every service without knowing
+> its type. Today you see all three — then you extend the tutorial like a real engineer would.
+>
+> 💡 **Aha you're chasing today:** "Methods and fields aren't new magic — they're just events
+> plus a little extra, built on everything I already learned. And I can now add my own!"
 
 > 🔑 **New words today:** *type‑erased / generic* = working with data **without** knowing its
 > exact C++ type at compile time (useful for tools/gateways). *Method* = a request‑and‑reply call
