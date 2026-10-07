@@ -1,0 +1,11 @@
+@startuml
+ 
+namespace score::mw::com {
+    interface "SkeletonEvent<SampleType>"  <<interface>> {
+      Send(const SampleType&):ResultBlank
+      Send(SampleAllocateePtr<SampleType>):ResultBlank
+
+    }
+}
+ 
+@enduml

@@ -35,7 +35,7 @@ section "LoLa" {
         version = 1
         safety = ScoreReq.Asil.B
         rationale = "The wrong user-configuration which could cause an abnormal behavior of the mw-implementation is covered via four AoUs. The broken file is ensured via a safety-certified file system. The broken JSON is covered via a safety-certified JSON-Parser implementation. The read-in-logic to our in-memory is covered via a specific preventive measure."
-        interface = "mw.com.Runtime.Initialize"
+        interface = "mw::com::SkeletonWrapper::MarkSubscribed()"
     }
 
     // ID: 6370893

@@ -1633,3 +1633,28 @@ cc_unit_test(
         "//score/mw/com/impl/test:runtime_mock_guard",
     ],
 )
+
+
+unit(
+
+    name = "binding_independent_skeleton_and_service_elements",
+
+    scope = [],
+
+    tests = [],
+
+    unit_design = [
+
+        "//score/mw/com/impl/dependability/skeleton_and_service_elements:unit_design",
+
+
+    ],
+
+    implementation = [],
+
+    public_api = ["//score/mw/com/impl/dependability/skeleton_and_service_elements/skeleton_api.puml",
+    "//score/mw/com/impl/dependability/skeleton_and_service_elements/skeleton_event_api.puml"
+]
+
+)
+ 
